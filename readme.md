@@ -19,6 +19,21 @@ pip install warble
 python3 -m pip install -r requirements.txt
 ```
 
+Es importante usar la misma versión del compilador de C++
+
+puedes configurarlo cómodamente haciendo esto:
+sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 10
+sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++ 20
+sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-11 30
+
+sudo update-alternatives --config c++
+#Aquí seleccionas el g++-11
+export CXX=/usr/bin/g++-11 
+# y ahora puedes compilar el proyecto.
+git clone --recurse-submodules https://github.com/mbientlab/MetaWear-SDK-Python.git
+python3 setup.py build
+
+
 ## Getting started
 
 To make it easy for you to get started with GitLab, here's a list of recommended next steps.
