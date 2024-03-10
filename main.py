@@ -9,21 +9,23 @@ import numpy as np
 import platform
 import sys
 import logging
-from services.menu_service import menu
-from settings import ASK_FOR_IP, BITA_OSC_DEFAULT_COORDINATES, BITA_OSC_PATH_POS, BITA_OSC_PATH_PRY, BITA_PORT, DEVICE_MAC, BITA_IP
+from services.menu_console_service import menu
+from settings import ASK_FOR_IP, BITA_OSC_DEFAULT_COORDINATES, BITA_OSC_PATH_POS, BITA_OSC_PATH_PRY, BITA_PORT, DEVICE_MAC, BITA_IP, OSC_IS_ENABLED
 from log_setup import log_setup
 import services.osc_service as osc_service
 import services.metawear_service as metawear_service
 import os
 import re
 logger = logging.getLogger(__name__)
+logger_datos = logging.getLogger("datos")
 if sys.version_info[0] == 2:
     range = xrange
 
 def data_callback(data):
     tag = "[data_callback]"
-    logger.info(f"{tag}Enviando datos por osc {data}")
-    osc_client.send_message(f"{BITA_OSC_PATH_PRY}", data)
+    if OSC_IS_ENABLED:
+        logger_datos.info(f"{tag}Enviando datos por osc {data}")
+        osc_client.send_message(f"{BITA_OSC_PATH_PRY}", data)
 
 
 def get_ip():
@@ -48,17 +50,18 @@ def get_ip():
 if __name__ == "__main__":
     log_setup("./log.log")
     logger.info("Iniciando sistema...")
-    
-    logger.info("Iniciando OSC")
-    if ASK_FOR_IP:
-        logger.info("Analizando red, buscando dispositivos disponibles...")
-        osc_ip = get_ip()
-    else:
-        osc_ip = BITA_IP
-    logger.info(f"[OSC] - Tratando de conectar a la ip : {osc_ip} - y al puerto {BITA_PORT}")
-    osc_client = osc_service.connect(osc_ip, BITA_PORT)
-    osc_service.init(osc_client, BITA_OSC_PATH_POS, BITA_OSC_DEFAULT_COORDINATES)
-    logger.info("OK")
+    osc_client = None
+    if OSC_IS_ENABLED:
+        logger.info("Iniciando OSC")
+        if ASK_FOR_IP:
+            logger.info("Analizando red, buscando dispositivos disponibles...")
+            osc_ip = get_ip()
+        else:
+            osc_ip = BITA_IP
+        logger.info(f"[OSC] - Tratando de conectar a la ip : {osc_ip} - y al puerto {BITA_PORT}")
+        osc_client = osc_service.connect(osc_ip, BITA_PORT)
+        osc_service.init(osc_client, BITA_OSC_PATH_POS, BITA_OSC_DEFAULT_COORDINATES)
+        logger.info("OK")
 
     logger.info("Conectando con dispositivo MetaWear")
     devices = metawear_service.connect_device(DEVICE_MAC, data_callback)
@@ -70,7 +73,7 @@ if __name__ == "__main__":
     logger.info("OK")
 
 
-    menu()
+    menu(devices, osc_client)
     
     logger.warning("Desconectando dispositivos")
     for device in devices:

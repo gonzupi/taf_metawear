@@ -44,10 +44,14 @@ def log_setup(file_name: str = "server.log"):
     de logs que guarda varios archivos de un tamaño máximo 
     cada uno en un sistema de logs rotativos
     """
+    
     LOGS_PATH = Path(LOGS_FILE_PATH)
     os.makedirs(LOGS_PATH, exist_ok=True)
     fileSize = log_fileSize  # Mb per file
     fileCount = log_fileCount  # Number of log files
+    
+    logger.setLevel(logging.INFO) 
+       
     # loggingLevel = logging.DEBUG # Lo dejo en settings.
     fileHandler = TimedRotatingFileHandler(
         LOGS_PATH / Path(file_name), when="MIDNIGHT", interval=1, backupCount=40
@@ -80,6 +84,10 @@ def log_setup(file_name: str = "server.log"):
         datefmt="%d-%m-%y %H:%M:%S",
         handlers=[fileHandler, stdoutHandler],
     )
+    
+    
+   
+    
 
 
 class CustomFormatter(logging.Formatter):

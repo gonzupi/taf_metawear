@@ -1,13 +1,13 @@
 
 
 # BITA OSC CONFIG
-BITA_PORT = 12301
+BITA_PORT = 12300
 BITA_OSC_PATH_PRY = "/3DTI-OSC/receiver/pry"
 BITA_OSC_PATH_POS = "/3DTI-OSC/receiver/pos"
 BITA_OSC_DEFAULT_COORDINATES = [0, 0, 0]
-BITA_IP = "192.168.223.119" # input("Introduce la IP de BiTA")
+BITA_IP = "127.0.0.1" # input("Introduce la IP de BiTA")
 
-
+OSC_IS_ENABLED = True
 
 # DEVICE METAWEAR MAC
 DEVICE_MAC = "C9:9A:27:AC:95:8B" # input("Introduce la MAC del IMU")
