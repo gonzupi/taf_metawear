@@ -98,6 +98,7 @@ class MetawearCallback:
             self.YAW_TO_CALIBRATE = yaw_origin
             self.PITCH_TO_CALIBRATE = pitch_origin
             self.ROLL_TO_CALIBRATE = roll_origin
+            self._position = [0, 0, 0]
              
         
 

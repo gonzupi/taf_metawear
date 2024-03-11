@@ -9,10 +9,22 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow
+from PyQt5.QtChart import QChart, QChartView, QLineSeries
+from PyQt5.QtGui import QPainter
 
 
-class MenuUI(QMainWindow):
+from settings import BITA_OSC_PATH_POS, BITA_OSC_PATH_PRY, BITA_PORT
+
+
+class Ui_MainScreen(QtWidgets.QMainWindow):
+    def __init__(self, osc_client, devices, osc_functions, devices_function):
+        super().__init__()
+        self.osc_client = osc_client
+        self.devices = devices
+        self.osc_functions = osc_functions
+        self.devices_function = devices_function
+        self.max_points = 50
+    
     def setupUi(self, MainScreen):
         MainScreen.setObjectName("MainScreen")
         MainScreen.resize(640, 480)
@@ -31,31 +43,30 @@ class MenuUI(QMainWindow):
         self.checkBox_osc_is_enabled.setGeometry(QtCore.QRect(20, 10, 231, 27))
         self.checkBox_osc_is_enabled.setObjectName("checkBox_osc_is_enabled")
         self.lineEdit_port = QtWidgets.QLineEdit(self.tab_configuration_osc)
-        self.lineEdit_port.setGeometry(QtCore.QRect(80, 80, 161, 29))
+        self.lineEdit_port.setGeometry(QtCore.QRect(330, 40, 71, 29))
         self.lineEdit_port.setObjectName("lineEdit_port")
         self.label_ip = QtWidgets.QLabel(self.tab_configuration_osc)
         self.label_ip.setGeometry(QtCore.QRect(20, 40, 74, 21))
         self.label_ip.setObjectName("label_ip")
         self.label_puerto = QtWidgets.QLabel(self.tab_configuration_osc)
-        self.label_puerto.setGeometry(QtCore.QRect(10, 80, 74, 21))
+        self.label_puerto.setGeometry(QtCore.QRect(270, 40, 74, 21))
         self.label_puerto.setObjectName("label_puerto")
         self.comboBox_aviable_ips = QtWidgets.QComboBox(self.tab_configuration_osc)
-        self.comboBox_aviable_ips.setGeometry(QtCore.QRect(50, 40, 191, 29))
+        self.comboBox_aviable_ips.setGeometry(QtCore.QRect(60, 40, 191, 29))
+        self.comboBox_aviable_ips.setEditable(True)
         self.comboBox_aviable_ips.setCurrentText("")
         self.comboBox_aviable_ips.setObjectName("comboBox_aviable_ips")
         self.lineEdit_osc_path_pry = QtWidgets.QLineEdit(self.tab_configuration_osc)
-        self.lineEdit_osc_path_pry.setGeometry(QtCore.QRect(50, 150, 191, 29))
-        self.lineEdit_osc_path_pry.setText("")
+        self.lineEdit_osc_path_pry.setGeometry(QtCore.QRect(50, 100, 351, 29))
         self.lineEdit_osc_path_pry.setObjectName("lineEdit_osc_path_pry")
         self.label_osc_pry = QtWidgets.QLabel(self.tab_configuration_osc)
-        self.label_osc_pry.setGeometry(QtCore.QRect(10, 120, 251, 21))
+        self.label_osc_pry.setGeometry(QtCore.QRect(10, 70, 251, 21))
         self.label_osc_pry.setObjectName("label_osc_pry")
         self.lineEdit_osc_path_pos = QtWidgets.QLineEdit(self.tab_configuration_osc)
-        self.lineEdit_osc_path_pos.setGeometry(QtCore.QRect(50, 210, 191, 29))
-        self.lineEdit_osc_path_pos.setText("")
+        self.lineEdit_osc_path_pos.setGeometry(QtCore.QRect(50, 160, 351, 29))
         self.lineEdit_osc_path_pos.setObjectName("lineEdit_osc_path_pos")
         self.label_osc_pos = QtWidgets.QLabel(self.tab_configuration_osc)
-        self.label_osc_pos.setGeometry(QtCore.QRect(10, 180, 251, 21))
+        self.label_osc_pos.setGeometry(QtCore.QRect(10, 130, 251, 21))
         self.label_osc_pos.setObjectName("label_osc_pos")
         self.tabWidget.addTab(self.tab_configuration_osc, "")
         self.tab_configuration_general = QtWidgets.QWidget()
@@ -82,18 +93,54 @@ class MenuUI(QMainWindow):
         self.tabWidget.addTab(self.tab_configuration_general, "")
         self.tab_visualization = QtWidgets.QWidget()
         self.tab_visualization.setObjectName("tab_visualization")
-        self.graphicsView = QtWidgets.QGraphicsView(self.tab_visualization)
-        self.graphicsView.setGeometry(QtCore.QRect(10, 30, 611, 201))
-        self.graphicsView.setObjectName("graphicsView")
+        
+        #self.graphicsView = QtWidgets.QGraphicsView(self.tab_visualization)
+        #self.graphicsView.setGeometry(QtCore.QRect(10, 30, 611, 201))
+        #self.graphicsView.setObjectName("graphicsView")
+        
+        # Crear las series para Yaw, Pitch y Roll
+        self.series_yaw = QLineSeries()
+        self.series_pitch = QLineSeries()
+        self.series_roll = QLineSeries()
+
+        # Nombrar las series
+        self.series_yaw.setName("Yaw")
+        self.series_pitch.setName("Pitch")
+        self.series_roll.setName("Roll")
+        # Crear y configurar el gráfico
+        self.chart = QChart()
+        self.chart.setGeometry(QtCore.QRectF(10.0, 30.0, 611.0, 201.0))
+        self.chart.addSeries(self.series_yaw)
+        self.chart.addSeries(self.series_pitch)
+        self.chart.addSeries(self.series_roll)
+        self.chart.createDefaultAxes()  # Crea los ejes por defecto
+        self.chart.legend().setVisible(True)
+        self.chart.legend().setAlignment(QtCore.Qt.AlignBottom)
+
+        # Crear una vista de gráfico y establecer el gráfico creado
+        self.chart_view = QChartView(self.chart)
+        self.chart_view.setRenderHint(QPainter.Antialiasing)
+
+
+        
+        
+        
+        ########
         self.lcdNumber_yaw = QtWidgets.QLCDNumber(self.tab_visualization)
         self.lcdNumber_yaw.setGeometry(QtCore.QRect(540, 300, 64, 23))
         self.lcdNumber_yaw.setObjectName("lcdNumber_yaw")
+        self.lcdNumber_yaw.setSmallDecimalPoint(True)
+        
         self.lcdNumber_pitch = QtWidgets.QLCDNumber(self.tab_visualization)
         self.lcdNumber_pitch.setGeometry(QtCore.QRect(540, 330, 64, 23))
         self.lcdNumber_pitch.setObjectName("lcdNumber_pitch")
+        self.lcdNumber_pitch.setSmallDecimalPoint(True)
+        
         self.lcdNumber_roll = QtWidgets.QLCDNumber(self.tab_visualization)
         self.lcdNumber_roll.setGeometry(QtCore.QRect(540, 360, 64, 23))
         self.lcdNumber_roll.setObjectName("lcdNumber_roll")
+        self.lcdNumber_roll.setSmallDecimalPoint(True)
+        
         self.label_yaw = QtWidgets.QLabel(self.tab_visualization)
         self.label_yaw.setGeometry(QtCore.QRect(460, 300, 74, 21))
         self.label_yaw.setObjectName("label_yaw")
@@ -106,17 +153,17 @@ class MenuUI(QMainWindow):
         self.pushButton_calibrate = QtWidgets.QPushButton(self.tab_visualization)
         self.pushButton_calibrate.setGeometry(QtCore.QRect(520, 250, 90, 29))
         self.pushButton_calibrate.setObjectName("pushButton_calibrate")
-        self.pushButton_top = QtWidgets.QPushButton(self.tab_visualization)
-        self.pushButton_top.setGeometry(QtCore.QRect(70, 250, 51, 61))
+        self.pushButton_up = QtWidgets.QPushButton(self.tab_visualization)
+        self.pushButton_up.setGeometry(QtCore.QRect(70, 250, 51, 61))
         font = QtGui.QFont()
         font.setFamily("DejaVu Sans")
         font.setPointSize(25)
         font.setBold(True)
         font.setItalic(False)
         font.setWeight(75)
-        self.pushButton_top.setFont(font)
-        self.pushButton_top.setAutoRepeat(True)
-        self.pushButton_top.setObjectName("pushButton_top")
+        self.pushButton_up.setFont(font)
+        self.pushButton_up.setAutoRepeat(True)
+        self.pushButton_up.setObjectName("pushButton_up")
         self.pushButton_down = QtWidgets.QPushButton(self.tab_visualization)
         self.pushButton_down.setGeometry(QtCore.QRect(70, 320, 51, 61))
         font = QtGui.QFont()
@@ -197,19 +244,50 @@ class MenuUI(QMainWindow):
 
         self.retranslateUi(MainScreen)
         self.tabWidget.setCurrentIndex(2)
-        self.buttonBox.accepted.connect(MainScreen.accept) # type: ignore
-        self.buttonBox.rejected.connect(MainScreen.reject) # type: ignore
+        #self.buttonBox.accepted.connect(MainScreen.accept) # type: ignore
+        #self.buttonBox.rejected.connect(MainScreen.reject) # type: ignore
+        
+        self.pushButton_down.clicked.connect (lambda: self.osc_functions["move_down" ](self.devices, self.osc_client, self.lcdNumber_x, self.lcdNumber_y, self.lcdNumber_z)) 
+        self.pushButton_up.clicked.connect   (lambda: self.osc_functions["move_up"   ](self.devices, self.osc_client, self.lcdNumber_x, self.lcdNumber_y, self.lcdNumber_z)) 
+        self.pushButton_left.clicked.connect (lambda: self.osc_functions["move_left" ](self.devices, self.osc_client, self.lcdNumber_x, self.lcdNumber_y, self.lcdNumber_z)) 
+        self.pushButton_right.clicked.connect(lambda: self.osc_functions["move_right"](self.devices, self.osc_client, self.lcdNumber_x, self.lcdNumber_y, self.lcdNumber_z)) 
+        self.pushButton_in.clicked.connect   (lambda: self.osc_functions["move_in"   ](self.devices, self.osc_client, self.lcdNumber_x, self.lcdNumber_y, self.lcdNumber_z)) 
+        self.pushButton_out.clicked.connect  (lambda: self.osc_functions["move_out"  ](self.devices, self.osc_client, self.lcdNumber_x, self.lcdNumber_y, self.lcdNumber_z)) 
+        
+        
+        self.pushButton_calibrate.clicked.connect(lambda: self.devices_function["calibrate"](self.devices)) 
+        
         QtCore.QMetaObject.connectSlotsByName(MainScreen)
+    
+    def add_point(self, x, yaw, pitch, roll):
+        # Añadir un nuevo punto a cada serie
+        self.series_yaw.append(x, yaw)
+        self.series_pitch.append(x, pitch)
+        self.series_roll.append(x, roll)
 
+        # Mantener el número de puntos dentro del máximo establecido
+        if len(self.series_yaw) > self.max_points:
+            self.series_yaw.removePoints(0, len(self.series_yaw) - self.max_points)
+            self.series_pitch.removePoints(0, len(self.series_pitch) - self.max_points)
+            self.series_roll.removePoints(0, len(self.series_roll) - self.max_points)
+
+        # Actualizar los ejes para acomodar los nuevos puntos
+        self.chart.removeAxis(self.chart.axisX())
+        self.chart.removeAxis(self.chart.axisY())
+        self.chart.createDefaultAxes()
+    
     def retranslateUi(self, MainScreen):
         _translate = QtCore.QCoreApplication.translate
         MainScreen.setWindowTitle(_translate("MainScreen", "Control sensor inercial"))
         self.checkBox_osc_is_enabled.setText(_translate("MainScreen", "Habilitar envío por OSC"))
+        self.lineEdit_port.setText(_translate("MainScreen", str(BITA_PORT)))
         self.label_ip.setText(_translate("MainScreen", "IP:"))
         self.label_puerto.setText(_translate("MainScreen", "Puerto"))
         self.comboBox_aviable_ips.setPlaceholderText(_translate("MainScreen", "Cargando lista de IPs"))
+        self.lineEdit_osc_path_pry.setText(_translate("MainScreen", BITA_OSC_PATH_PRY))
         self.lineEdit_osc_path_pry.setPlaceholderText(_translate("MainScreen", "OSC Path - PRY"))
         self.label_osc_pry.setText(_translate("MainScreen", "Path OSC - PRY"))
+        self.lineEdit_osc_path_pos.setText(_translate("MainScreen",BITA_OSC_PATH_POS))
         self.lineEdit_osc_path_pos.setPlaceholderText(_translate("MainScreen", "OSC Path - POS"))
         self.label_osc_pos.setText(_translate("MainScreen", "Path OSC - POS"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_configuration_osc), _translate("MainScreen", "OSC"))
@@ -222,7 +300,7 @@ class MenuUI(QMainWindow):
         self.label_pitch.setText(_translate("MainScreen", "PITCH"))
         self.label_roll.setText(_translate("MainScreen", "ROLL"))
         self.pushButton_calibrate.setText(_translate("MainScreen", "Calibrar"))
-        self.pushButton_top.setText(_translate("MainScreen", "↑"))
+        self.pushButton_up.setText(_translate("MainScreen", "↑"))
         self.pushButton_down.setText(_translate("MainScreen", "↓"))
         self.pushButton_right.setText(_translate("MainScreen", "→"))
         self.pushButton_left.setText(_translate("MainScreen", "←"))
@@ -233,4 +311,3 @@ class MenuUI(QMainWindow):
         self.label_z.setText(_translate("MainScreen", "Z"))
         self.label_graphics_title.setText(_translate("MainScreen", "Gráfica de orientación en el tiempo"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_visualization), _translate("MainScreen", "Visualización y controles"))
-
