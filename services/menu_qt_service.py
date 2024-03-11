@@ -4,7 +4,7 @@ import sys
 import services.metawear_service as metawear_service
 from settings import BITA_OSC_PATH_POS, OSC_IS_ENABLED, POS_STEP
 
-class MainUI(QWidget):
+class MenuUI(QWidget):
     def __init__(self):
         super().__init__()
         self.devices = []  # Esta lista debería ser actualizada con tus dispositivos reales
@@ -61,6 +61,6 @@ class MainUI(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = MainUI()
+    window = MenuUI()
     window.show()
     sys.exit(app.exec_())

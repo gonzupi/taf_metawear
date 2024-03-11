@@ -9,6 +9,7 @@ import numpy as np
 import platform
 import sys
 import logging
+from qt_project.qt_menu import start_menu
 from services.menu_console_service import menu
 from settings import ASK_FOR_IP, BITA_OSC_DEFAULT_COORDINATES, BITA_OSC_PATH_POS, BITA_OSC_PATH_PRY, BITA_PORT, DEVICE_MAC, BITA_IP, OSC_IS_ENABLED
 from log_setup import log_setup
@@ -16,17 +17,26 @@ import services.osc_service as osc_service
 import services.metawear_service as metawear_service
 import os
 import re
+from PyQt5 import QtCore, QtGui, QtWidgets
+
 logger = logging.getLogger(__name__)
 logger_datos = logging.getLogger("datos")
 if sys.version_info[0] == 2:
     range = xrange
 
+windows = None
+#windows = start_menu() 
+
 def data_callback(data):
+    
     tag = "[data_callback]"
     if OSC_IS_ENABLED:
         logger_datos.info(f"{tag}Enviando datos por osc {data}")
         osc_client.send_message(f"{BITA_OSC_PATH_PRY}", data)
-
+    if windows:
+        windows.lcdNumber_pitch.setText(data[0])
+        windows.lcdNumber_roll.setText(data[1])
+        windows.lcdNumber_yaw.setText(data[2])
 
 def get_ip():
    
@@ -62,19 +72,23 @@ if __name__ == "__main__":
         osc_client = osc_service.connect(osc_ip, BITA_PORT)
         osc_service.init(osc_client, BITA_OSC_PATH_POS, BITA_OSC_DEFAULT_COORDINATES)
         logger.info("OK")
-
+    
+    
+    
     logger.info("Conectando con dispositivo MetaWear")
     devices = metawear_service.connect_device(DEVICE_MAC, data_callback)
     logger.info("OK")
 
     logger.info(f"Configurando {len(devices)} dispositivos")
+   
     for device in devices:
         metawear_service.configure_device(device)
     logger.info("OK")
+    #windows = start_menu(devices, osc_client)
 
+    
 
     menu(devices, osc_client)
-    
     logger.warning("Desconectando dispositivos")
     for device in devices:
         metawear_service.disconnect(device)
