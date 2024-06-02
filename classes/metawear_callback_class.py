@@ -1,9 +1,11 @@
+import logging
 from typing import Callable
-from mbientlab.metawear import MetaWear, libmetawear, parse_value, POINTER
+
 import numpy as np
 
+from mbientlab.metawear import POINTER, MetaWear, libmetawear, parse_value
 from mbientlab.metawear.cbindings import *
-import logging
+
 #logger = logging.getLogger(__name__)
 
 
@@ -11,9 +13,9 @@ import logging
 logger = logging.getLogger('datos')
 logging.getLogger('datos').setLevel(logging.INFO)
 
-handler_datos = logging.FileHandler('./LOG/datos.log')  # Archivo de log para datos
+handler_datos = logging.FileHandler('./LOG/datos.csv')  # Archivo de log para datos
 #handler_datos = logging.FileHandler('log_datos.txt') 
-formatter_datos = logging.Formatter(f'%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter_datos = logging.Formatter(f'%(asctime)s;%(message)s')
 handler_datos.setFormatter(formatter_datos)
 logger.addHandler(handler_datos)
 logging.getLogger('datos').propagate = False
@@ -91,9 +93,9 @@ class MetawearCallback:
         pitch_origin = parsed_data.pitch
         roll_origin = parsed_data.roll
         heading_origin = parsed_data.heading
-        logger.info(f"{self.tag}ORIG: [yaw : {round(yaw_origin, self._precision)}]\t\t[pitch : {round(pitch_origin, self._precision)}]\t\t[roll : {round(roll_origin, self._precision)}] \t\t[heading : {round(heading_origin,self._precision)}]")
+        logger.debug(f"ORIG;yaw;{round(yaw_origin, self._precision)};pitch;{round(pitch_origin, self._precision)};roll;{round(roll_origin, self._precision)};heading;{round(heading_origin,self._precision)};")
         if self._is_pending_calibration:
-            logger.info("{self.tag}Calibrando")
+            logger.warning("{self.tag}Calibrando")
             self._is_pending_calibration = False
             self.YAW_TO_CALIBRATE = yaw_origin
             self.PITCH_TO_CALIBRATE = pitch_origin
@@ -106,14 +108,13 @@ class MetawearCallback:
         pitch = MetawearCallback.calibrateDegree(pitch_origin, self.PITCH_TO_CALIBRATE)
         roll = MetawearCallback.calibrateDegree(roll_origin, self.ROLL_TO_CALIBRATE)
         
-        logger.info(f"{self.tag}EUL: [yaw : {round(yaw, self._precision)}]\t\t[pitch : {round(pitch, self._precision)}]\t\t[roll : {round(roll, self._precision)}] \t\t[heading : {round(heading_origin,self.precision)}]")
+        logger.debug(f"EUL_FIXED;yaw;{round(yaw, self._precision)};pitch;{round(pitch, self._precision)};roll;{round(roll, self._precision)};heading;{round(heading_origin,self.precision)};")
         
         yaw_r = np.deg2rad(yaw)
         pitch_r = np.deg2rad(pitch)
         roll_r = np.deg2rad(roll)
         heading_r = np.deg2rad(heading_origin)
-        logger.info(f"{self.tag}RAD: [yaw : {round(yaw_r, self._precision)}]\t\t[pitch : {round(pitch_r, self._precision)}]\t\t[roll : {round(roll_r, self._precision)}]\t\t[heading : {round(heading_r,self.precision)}]")
-        logger.info("")
+        logger.info(f"RAD;yaw;{round(yaw_r, self._precision)};pitch;{round(pitch_r, self._precision)};roll;{round(roll_r, self._precision)}];heading;{round(heading_r,self.precision)};")
 
         self.samples+= 1
         

@@ -1,20 +1,28 @@
-from pythonosc import udp_client
 import logging
 
-from settings import BITA_OSC_PATH_POS, OSC_IS_ENABLED, POS_STEP
+from pythonosc import udp_client
+
+from settings import BITA_OSC_PATH_POS, POS_STEP
+
 logger = logging.getLogger(__name__)
 
 
 def connect(ip, port):
     logger.info(f"[OSC] connect >> Tratando de conectar por OSC a {ip}:{port}...")
-    client =  udp_client.SimpleUDPClient(ip, port)
+    client =  udp_client.SimpleUDPClient(ip, int(port))
+
     logger.info("[OSC] connect >> OK")
     return client
     
-def init(osc_client, path_pos=[0, 0, 0], default_coordinates=[0, 0, 0]):
-    logger.info(f"[OSC] connect >> Inicializando OSC")
-    osc_client.send_message(path_pos,default_coordinates )
-    logger.info("[OSC] init >> OK")
+def init(osc_client, path_pos, default_coordinates=[0, 0, 0]):
+    try:
+        logger.info(f"[OSC] connect >> Inicializando OSC - path_pos:{path_pos}\tcoords:{default_coordinates}")
+        osc_client.send_message(path_pos,default_coordinates )
+        logger.info("[OSC] init >> OK")
+        return True
+    except Exception as e:
+        logger.exception("No se ha podido inicializar la comunicación por OSC")
+        return False
 
 
 
@@ -28,7 +36,7 @@ def up_function(devices, osc_client):
 
         pos_y = pos_y + POS_STEP
 
-        if OSC_IS_ENABLED and osc_client:
+        if osc_client:
             osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
@@ -43,7 +51,7 @@ def down_function(devices, osc_client):
         pos_z = position[2]
 
         pos_y = pos_y - POS_STEP
-        if OSC_IS_ENABLED and osc_client:
+        if osc_client:
             osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
@@ -58,7 +66,7 @@ def right_function(devices, osc_client):
         pos_z = position[2]
 
         pos_x = pos_x + POS_STEP
-        if OSC_IS_ENABLED and osc_client:
+        if osc_client:
             osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
@@ -73,7 +81,7 @@ def left_function(devices, osc_client):
         pos_z = position[2]
 
         pos_x = pos_x - POS_STEP
-        if OSC_IS_ENABLED and osc_client:
+        if osc_client:
             osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
@@ -88,7 +96,7 @@ def in_function(devices, osc_client):
         pos_z = position[2]
 
         pos_z = pos_z + POS_STEP
-        if OSC_IS_ENABLED and osc_client:
+        if osc_client:
             osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
@@ -103,7 +111,7 @@ def out_function(devices, osc_client):
         pos_z = position[2]
 
         pos_z = pos_z - POS_STEP
-        if OSC_IS_ENABLED and osc_client:
+        if osc_client:
             osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
