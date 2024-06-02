@@ -13,16 +13,20 @@ from PyQt5.QtChart import QChart, QChartView, QLineSeries
 from PyQt5.QtGui import QPainter
 
 
-from settings import BITA_OSC_PATH_POS, BITA_OSC_PATH_PRY, BITA_PORT
+from settings import BITA_OSC_PATH_POS, BITA_OSC_PATH_PRY, BITA_PORT, DEVICE_MAC, POS_STEP
 
 
 class Ui_MainScreen(QtWidgets.QMainWindow):
-    def __init__(self, osc_client, devices, osc_functions, devices_function):
+    def __init__(self, osc_client, devices, osc_functions, devices_function,  devices_ip, osc_ip):
         super().__init__()
         self.osc_client = osc_client
         self.devices = devices
         self.osc_functions = osc_functions
         self.devices_function = devices_function
+        
+        self.devices_ip=devices_ip
+        self.osc_ip=osc_ip
+        
         self.max_points = 50
     
     def setupUi(self, MainScreen):
@@ -109,7 +113,7 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.series_roll.setName("Roll")
         # Crear y configurar el gráfico
         self.chart = QChart()
-        self.chart.setGeometry(QtCore.QRectF(10.0, 30.0, 611.0, 201.0))
+        #self.chart.setGeometry(QtCore.QRectF(10.0, 30.0, 611.0, 201.0))
         self.chart.addSeries(self.series_yaw)
         self.chart.addSeries(self.series_pitch)
         self.chart.addSeries(self.series_roll)
@@ -118,7 +122,9 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.chart.legend().setAlignment(QtCore.Qt.AlignBottom)
 
         # Crear una vista de gráfico y establecer el gráfico creado
-        self.chart_view = QChartView(self.chart)
+        self.chart_view = QChartView(self.chart, self.tab_visualization)
+        self.chart_view.setGeometry(QtCore.QRect(10, 30, 611, 201))
+
         self.chart_view.setRenderHint(QPainter.Antialiasing)
 
 
@@ -275,6 +281,9 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.chart.removeAxis(self.chart.axisX())
         self.chart.removeAxis(self.chart.axisY())
         self.chart.createDefaultAxes()
+        
+        self.comboBox_aviable_ips.addItems(self.devices_ip)
+        self.comboBox_aviable_ips.setCurrentText(self.osc_ip)
     
     def retranslateUi(self, MainScreen):
         _translate = QtCore.QCoreApplication.translate
@@ -282,6 +291,7 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.checkBox_osc_is_enabled.setText(_translate("MainScreen", "Habilitar envío por OSC"))
         self.lineEdit_port.setText(_translate("MainScreen", str(BITA_PORT)))
         self.label_ip.setText(_translate("MainScreen", "IP:"))
+        self.lineEdit_device_mac.setText(_translate("MainScreen", DEVICE_MAC))
         self.label_puerto.setText(_translate("MainScreen", "Puerto"))
         self.comboBox_aviable_ips.setPlaceholderText(_translate("MainScreen", "Cargando lista de IPs"))
         self.lineEdit_osc_path_pry.setText(_translate("MainScreen", BITA_OSC_PATH_PRY))
@@ -309,5 +319,6 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.label_x.setText(_translate("MainScreen", "X"))
         self.label_y.setText(_translate("MainScreen", "Y"))
         self.label_z.setText(_translate("MainScreen", "Z"))
+        self.spinBox_step_size.setValue(POS_STEP)
         self.label_graphics_title.setText(_translate("MainScreen", "Gráfica de orientación en el tiempo"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_visualization), _translate("MainScreen", "Visualización y controles"))

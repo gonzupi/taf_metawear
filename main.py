@@ -26,6 +26,10 @@ if sys.version_info[0] == 2:
 
 osc_client = None
 counter = 1
+#yaw_values = list(np.zeros(100))
+#pitch_values = list(np.zeros(100))
+#roll_values = list(np.zeros(100))
+
 def data_callback(data):
     global osc_client, windows, counter
  
@@ -37,23 +41,28 @@ def data_callback(data):
     #logger.info(f"windows {type(windows)}")
     if windows:
         #logger.info(f"windows pitch {data[0]}")
-        windows.ui.lcdNumber_pitch.display(data[0])
-        windows.ui.lcdNumber_roll.display(data[1])
-        windows.ui.lcdNumber_yaw.display(data[2])
         
+        windows.ui.lcdNumber_pitch.display(round(data[0], 2))
+        windows.ui.lcdNumber_roll.display(round(data[1], 2))
+        windows.ui.lcdNumber_yaw.display(round(data[2], 2))
+        
+        #yaw_values = data[0].extent(yaw_values)[0:100]
+        #pitch_values = data[0].extent(pitch_values)[0:100]
+        #roll_values = data[0].extent(roll_values)[0:100]
         windows.ui.series_yaw.append(counter, data[0])
         windows.ui.series_pitch.append(counter, data[1])
         windows.ui.series_roll.append(counter, data[2])
         #windows.ui.add_point(counter,data[0], data[1], data[2])
 
-        counter += 1
+        counter = counter + 1
 
 def get_ip():
-    devices = []
+    devices = ["127.0.0.1"]
     for device in os.popen('arp -a'): devices.append(device)
     logger.info("Selecciona una de las IPs Locales:")
     for index, device in enumerate(devices):
-        logger.info(f"{index} - {device}")
+        d = device.replace('\n', '')
+        logger.info(f"{index} - {d}")
     ip_input = input("Selecciona un número o introduce la IP manualmente: \t")
     try:
         data = devices[int(ip_input)]
@@ -61,9 +70,9 @@ def get_ip():
 
         ip = re.search(patron_ip, data).group(1)
         logger.info(f"IP seleccionada {ip}")
-        return ip
+        return ip, devices
     except Exception as e:
-        return ip_input
+        return ip_input, devices
         
 
 def old_main():
@@ -118,21 +127,23 @@ if __name__ == "__main__":
     for device in devices:
         metawear_service.configure_device(device)
     logger.info("OK")
-    
+    osc_ip = None
+    devices_ip = []
     if OSC_IS_ENABLED:
         logger.info("Iniciando OSC")
         if ASK_FOR_IP:
             logger.info("Analizando red, buscando dispositivos disponibles...")
-            osc_ip = get_ip()
+            osc_ip, devices_ip = get_ip()
         else:
             osc_ip = BITA_IP
         logger.info(f"[OSC] - Tratando de conectar a la ip : {osc_ip} - y al puerto {BITA_PORT}")
         osc_client = osc_service.connect(osc_ip, BITA_PORT)
         osc_service.init(osc_client, BITA_OSC_PATH_POS, BITA_OSC_DEFAULT_COORDINATES)
         logger.info("OK")
-    
-    application, app , worker= start_menu(osc_client, devices) 
+    devices_ip.append("127.0.0.1")
+    application, app , worker= start_menu(osc_client, devices, devices_ip, osc_ip) 
     windows = application
+    
     print( app, application, worker)
     app.exec_()
 

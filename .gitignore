@@ -1,2 +1,12 @@
 *.pyc
 *.log
+*.AppImage
+*.pkg
+build
+
+main.spec
+.metawear/C99A27AC958B.json
+*.exe
+dict
+*.log*
+dist/main.zip

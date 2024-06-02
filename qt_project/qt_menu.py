@@ -60,7 +60,7 @@ def update_devices_position(devices, lcd_x, lcd_y, lcd_z):
 
 
 class ApplicationWindow(QtWidgets.QMainWindow):
-    def __init__(self, osc_client, devices):
+    def __init__(self, osc_client, devices, devices_ip, osc_ip):
         super(ApplicationWindow, self).__init__()
         osc_functions = {
             "move_down" : down_function_qt,
@@ -74,15 +74,19 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         devices_function = {
             "calibrate" : calibrate
         }
-        self.ui = Ui_MainScreen(osc_client, devices, osc_functions, devices_function)
+        self.ui = Ui_MainScreen(osc_client, devices, osc_functions, devices_function,  devices_ip, osc_ip)
         self.ui.setupUi(self)
         self.osc_client = osc_client
+        self.devices_ip=devices_ip
+        self.osc_ip=osc_ip
 
 
-def start_menu(osc_client, devices):
+def start_menu(osc_client, devices, devices_ip, osc_ip):
     global windows
     app = QtWidgets.QApplication(sys.argv)
-    application = ApplicationWindow(osc_client, devices)
+    # application.ui.comboBox_aviable_ips.addItems()
+    # application.ui.comboBox_aviable_ips.currentText(osc_ip)
+    application = ApplicationWindow(osc_client, devices, devices_ip, osc_ip)
     application.show()
     worker = Worker(devices)
     worker.start()
