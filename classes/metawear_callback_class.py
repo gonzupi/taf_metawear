@@ -1,4 +1,5 @@
 import logging
+import signal
 from typing import Callable
 
 import numpy as np
@@ -20,7 +21,9 @@ handler_datos.setFormatter(formatter_datos)
 logger.addHandler(handler_datos)
 logging.getLogger('datos').propagate = False
 
-
+def handle_sigabrt(signum, frame):
+        print("SIGABRT signal received")
+        
 logger_general = logging.getLogger(__name__)
 class MetawearCallback:
     # init
@@ -32,6 +35,7 @@ class MetawearCallback:
             data_callback (Callable): Función callback que recibirá los datos yaw pitch y roll en radianes al recibir los datos del dispositivo.
             precision (int, optional): Dígitos decimales a mandar.. Defaults to 2.
         """
+        signal.signal(signal.SIGABRT, handle_sigabrt)
         self.device = device
         self.samples = 0
         self.callback = FnVoid_VoidP_DataP(self.data_handler)
@@ -118,5 +122,5 @@ class MetawearCallback:
 
         self.samples+= 1
         
-        self.data_callback([pitch_r, roll_r, yaw_r])
+        self.data_callback([pitch_r, roll_r, yaw_r, heading_r])
         

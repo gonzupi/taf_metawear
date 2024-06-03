@@ -10,3 +10,6 @@ main.spec
 dict
 *.log*
 dist/main.zip
+LOG
+AppDir
+squashfs-root

@@ -29,7 +29,7 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.devices_function = devices_function
         self.devices_ip = devices_ip
         self.osc_ip = osc_ip
-        self.max_points = 500
+        self.max_points = 5000
         self.counter = 0
         self.setupUi(self)
         self.data_signal.connect(self.update_data)
@@ -146,15 +146,18 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.series_yaw = QLineSeries()
         self.series_pitch = QLineSeries()
         self.series_roll = QLineSeries()
+        self.series_heading = QLineSeries()
         
         self.series_yaw.setName("Yaw")
         self.series_pitch.setName("Pitch")
         self.series_roll.setName("Roll")
+        self.series_heading.setName("Heading")
         
         self.chart = QChart()
         self.chart.addSeries(self.series_yaw)
         self.chart.addSeries(self.series_pitch)
         self.chart.addSeries(self.series_roll)
+        self.chart.addSeries(self.series_heading)
         self.chart.createDefaultAxes()
         self.chart.legend().setVisible(True)
         self.chart.legend().setAlignment(QtCore.Qt.AlignBottom)
@@ -195,24 +198,31 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.series_yaw = QLineSeries()
         self.series_pitch = QLineSeries()
         self.series_roll = QLineSeries()
+        self.series_heading = QLineSeries()
 
         self.series_yaw.setName("Yaw")
         self.series_pitch.setName("Pitch")
         self.series_roll.setName("Roll")
+        self.series_heading.setName("Heading")
         self.series_yaw.setPen(QPen(QtCore.Qt.red))
         self.series_pitch.setPen(QPen(QtCore.Qt.green))
         self.series_roll.setPen(QPen(QtCore.Qt.blue))
+        self.series_heading.setPen(QPen(QtCore.Qt.gray))
         self.chart = QChart()
         self.chart.addSeries(self.series_yaw)
         self.chart.addSeries(self.series_pitch)
         self.chart.addSeries(self.series_roll)
+        self.chart.addSeries(self.series_heading)
 
         self.chart.createDefaultAxes()
         self.chart.legend().setVisible(True)
         self.chart.legend().setAlignment(QtCore.Qt.AlignBottom)
         self.chart_view.setChart(self.chart)
         self.chart.axisY().setRange(0, 7)
-
+        self.chart.axisX().setRange(0, self.max_points)
+        
+        # for x in range(0, self.max_points):
+        #     self.add_point
 
         self.lcd_displays = {}
         labels = ["YAW", "PITCH", "ROLL", "X", "Y", "Z"]
@@ -271,15 +281,17 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
             #btn.clicked.connect(lambda _, b=btn_text: self.control_button_clicked(b))#
             btn.clicked.connect(lambda: self.osc_functions[control_buttons_functions[btn_text]](self.devices, self.osc_client))
 
-    def add_point(self, x, yaw, pitch, roll):
+    def add_point(self, x, yaw, pitch, roll, heading):
         if len(self.series_yaw) >= self.max_points:
             self.series_yaw.remove(0)
             self.series_pitch.remove(0)
             self.series_roll.remove(0)
+            self.series_heading.remove(0)
 
         self.series_yaw.append(x, yaw)
         self.series_pitch.append(x, pitch)
         self.series_roll.append(x, roll)
+        self.series_heading.append(x, heading)
 
         # Desplaza la gráfica al actualizar los puntos
         if x >= self.max_points:
@@ -287,13 +299,14 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot(list)
     def update_data(self, data):
+        self.lcd_displays["yaw"].display(round(data[2], 2))
         self.lcd_displays["pitch"].display(round(data[0], 2))
         self.lcd_displays["roll"].display(round(data[1], 2))
-        self.lcd_displays["yaw"].display(round(data[2], 2))
+        # self.lcd_displays["yaw"].display(round(data[3], 2))
 
         # Sólo actualizar 1 de cada 100 puntos
         if self.counter % self.CHART_POINTS_VISUALIZATION_INTERVAL == 0:
-            self.add_point(self.counter, data[0], data[1], data[2])
+            self.add_point(self.counter, data[2], data[0], data[1], data[3])
 
         self.counter += 1
     def retranslateUi(self, MainScreen):

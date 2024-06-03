@@ -39,6 +39,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             "move_out"  : self.out_function_qt,
             "connect"   : self.start_osc,
             "set_enable_osc" : self.set_enable_osc,
+            "data_callback" : self.data_callback
         }
         devices_function = {
             "calibrate" : self.calibrate,
@@ -60,7 +61,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         tag = "[data_callback]"
         if self.OSC_IS_ENABLED and  self.osc_client:
             logger_datos.debug(f"{tag}Enviando por osc {data}")
-            self.osc_client.send_message(f"{BITA_OSC_PATH_PRY}", data)
+            
+            self.osc_client.send_message(f"{BITA_OSC_PATH_PRY}", data[0:3]) # pitch_r, roll_r, yaw_r, heading
 
         # self.ui.lcd_displays["pitch"].display(round(data[0], 2))
         # self.ui.lcd_displays["roll"].display(round(data[1], 2))
