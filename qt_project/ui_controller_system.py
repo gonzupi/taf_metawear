@@ -128,7 +128,8 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.tabWidget.addTab(self.tab_configuration_general, "")
         logger.info(f"Añadiendo IPs: {self.devices_ip}")
         self.comboBox_aviable_ips.addItems(self.devices_ip)
-        self.comboBox_aviable_ips.setEditText(self.devices_ip[0])
+        if len(self.devices_ip) > 0:
+            self.comboBox_aviable_ips.setEditText(self.devices_ip[0])
         
     def setup_visualization_tab(self):
         self.tab_visualization = QtWidgets.QWidget()
@@ -338,7 +339,7 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
     def setup_connections(self):
         self.checkBox_osc_is_enabled.stateChanged.connect(self.osc_functions["set_enable_osc"])
         self.pushButton_connect.clicked.connect(lambda: self.devices_function["connect"](self.lineEdit_device_mac.text()))
-        self.pushButton_disconnect.clicked.connect(lambda: self.devices_function["disconnect"](self.lineEdit_device_mac.text()))
+        self.pushButton_disconnect.clicked.connect(lambda: self.devices_function["disconnect"]())
         self.pushButton_calibrate.clicked.connect(lambda: self.devices_function["calibrate"](self.devices))
 
 if __name__ == "__main__":

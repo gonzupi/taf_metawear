@@ -1,9 +1,11 @@
 import logging
+import os
 import signal
 from typing import Callable
 
 import numpy as np
 
+from log_setup import LOGS_FILE_PATH
 from mbientlab.metawear import POINTER, MetaWear, libmetawear, parse_value
 from mbientlab.metawear.cbindings import *
 
@@ -14,7 +16,8 @@ from mbientlab.metawear.cbindings import *
 logger = logging.getLogger('datos')
 logging.getLogger('datos').setLevel(logging.INFO)
 
-handler_datos = logging.FileHandler('./LOG/datos.csv')  # Archivo de log para datos
+os.makedirs(LOGS_FILE_PATH, exist_ok=True)
+handler_datos = logging.FileHandler(os.path.join(LOGS_FILE_PATH,'datos.csv'))  # Archivo de log para datos
 #handler_datos = logging.FileHandler('log_datos.txt') 
 formatter_datos = logging.Formatter(f'%(asctime)s;%(message)s')
 handler_datos.setFormatter(formatter_datos)

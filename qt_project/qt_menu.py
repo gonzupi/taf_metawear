@@ -197,8 +197,7 @@ def start_menu():
     application = ApplicationWindow()
     application.show()
     windows = application
-    print( app, application)
-    
+   
     return application, app 
 
 
