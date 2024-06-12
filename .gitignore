@@ -13,3 +13,4 @@ dist/main.zip
 LOG
 AppDir
 squashfs-root
+dist

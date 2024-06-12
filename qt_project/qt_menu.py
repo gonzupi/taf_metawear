@@ -5,13 +5,13 @@ import re
 import signal
 import sys
 import time
+from typing import Type
 
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtCore import QThread, pyqtSignal
 
 import services.osc_service as osc_service
 from qt_project.ui_controller_system import Ui_MainScreen
-from services.metawear_service import MetaWearService
+from services.SensorInterface import SensorInterface
 from settings import (ASK_FOR_IP, BITA_IP, BITA_OSC_DEFAULT_COORDINATES,
                       BITA_OSC_PATH_POS, BITA_OSC_PATH_PRY, BITA_PORT,
                       DEVICE_MAC, OSC_IS_ENABLED)
@@ -26,7 +26,7 @@ def handle_sigabrt(signum, frame):
 signal.signal(signal.SIGABRT, handle_sigabrt)
 class ApplicationWindow(QtWidgets.QMainWindow):
     
-    def __init__(self):
+    def __init__(self, sensorClassType : Type[SensorInterface]):
         super(ApplicationWindow, self).__init__()
         signal.signal(signal.SIGABRT, handle_sigabrt)
 
@@ -49,6 +49,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         
         devices_ip = self.get_ip()
         osc_ip = ""
+        self.sensorClassType = sensorClassType
         self.ui = Ui_MainScreen(None, [], osc_functions, devices_function,  devices_ip, osc_ip)
         self.ui.setupUi(self)
         self.osc_client = None
@@ -62,7 +63,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         if self.OSC_IS_ENABLED and  self.osc_client:
             logger_datos.debug(f"{tag}Enviando por osc {data}")
             
-            self.osc_client.send_message(f"{BITA_OSC_PATH_PRY}", data[0:3]) # pitch_r, roll_r, yaw_r, heading
+            self.osc_client.send_message(f"{BITA_OSC_PATH_PRY}", data) # pitch_r, roll_r, yaw_r, heading
 
         # self.ui.lcd_displays["pitch"].display(round(data[0], 2))
         # self.ui.lcd_displays["roll"].display(round(data[1], 2))
@@ -132,10 +133,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.sensor_service.disconnect()
                 self.ui.pushButton_disconnect.setEnabled(False)
             logger.info("Conectando dispositivo")
-            self.sensor_service = MetaWearService(device_mac, self.data_callback)
-            devices = self.sensor_service.connect_device()
-            for device in devices:
-                self.sensor_service.configure_device(device)
+            self.sensor_service = self.sensorClassType(device_mac, self.data_callback)
+            devices = self.sensor_service.connect()
             self.ui.pushButton_disconnect.setEnabled(True)
             self.ui.tabWidget.setCurrentIndex(2)
         except Exception as e:
@@ -184,20 +183,22 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         for device in devices:
             position = device.position
             #lcd_x.display(position[0])
-            self.ui.lcd_displays["x"].display(position[0])
+            if "X_POS" in self.ui.lcd_displays:
+                self.ui.lcd_displays["X_POS"].display(position[0])
             #lcd_y.display(position[1])
-            self.ui.lcd_displays["y"].display(position[1])
+            if "Y_POS" in self.ui.lcd_displays:
+                self.ui.lcd_displays["Y_POS"].display(position[1])
             #lcd_z.display(position[2])
-            self.ui.lcd_displays["z"].display(position[2])
+            if "Z_POS" in self.ui.lcd_displays:
+                self.ui.lcd_displays["Z_POS"].display(position[2])
         
-def start_menu():
+def start_menu(sensorClassType : Type[SensorInterface]):
     global windows
     app = QtWidgets.QApplication(sys.argv)
 
-    application = ApplicationWindow()
+    application = ApplicationWindow(sensorClassType)
     application.show()
     windows = application
-   
     return application, app 
 
 

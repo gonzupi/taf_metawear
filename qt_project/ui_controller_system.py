@@ -15,7 +15,7 @@ from PyQt5.QtChart import QChart, QChartView, QLineSeries
 from PyQt5.QtGui import QPainter, QPen
 
 from settings import (BITA_OSC_PATH_POS, BITA_OSC_PATH_PRY, BITA_PORT,
-                      DEVICE_MAC, POS_STEP)
+                      DEVICE_MAC, MODE_SENSOR, MODE_UI, POS_STEP)
 
 logger = logging.getLogger(__name__)
 
@@ -144,28 +144,36 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.chart_view.setRenderHint(QPainter.Antialiasing)
         self.grid_layout_visualization.addWidget(self.chart_view, 1, 0, 1, 6)
         
-        self.series_yaw = QLineSeries()
-        self.series_pitch = QLineSeries()
-        self.series_roll = QLineSeries()
-        self.series_heading = QLineSeries()
+        self.series_0 = QLineSeries()
+        self.series_1 = QLineSeries()
+        self.series_2 = QLineSeries()
+        self.series_3 = QLineSeries()
         
-        self.series_yaw.setName("Yaw")
-        self.series_pitch.setName("Pitch")
-        self.series_roll.setName("Roll")
-        self.series_heading.setName("Heading")
+        if MODE_UI == "QUATERNIONS":
+            axis = ["w", "x", "y", "z"]
+        else:
+            axis = ["yaw", "pitch", "roll", "heading"]
+        self.series_0.setName(axis[0])
+        self.series_1.setName(axis[1])
+        self.series_2.setName(axis[2])
+        self.series_3.setName(axis[3])
         
         self.chart = QChart()
-        self.chart.addSeries(self.series_yaw)
-        self.chart.addSeries(self.series_pitch)
-        self.chart.addSeries(self.series_roll)
-        self.chart.addSeries(self.series_heading)
+        self.chart.addSeries(self.series_0)
+        self.chart.addSeries(self.series_1)
+        self.chart.addSeries(self.series_2)
+        self.chart.addSeries(self.series_3)
         self.chart.createDefaultAxes()
         self.chart.legend().setVisible(True)
         self.chart.legend().setAlignment(QtCore.Qt.AlignBottom)
         self.chart_view.setChart(self.chart)
 
         self.lcd_displays = {}
-        for i, label in enumerate(["YAW", "PITCH", "ROLL", "X", "Y", "Z"]):
+        if MODE_UI == "QUATERNIONS":
+            labels = ["w", "x", "y", "z", "X_POS", "Y_POS", "Z_POS"]
+        else:
+            labels = ["yaw", "pitch", "roll", "X_POS", "Y_POS", "Z_POS"]
+        for i, label in enumerate(labels):
             label_widget = QtWidgets.QLabel(self.tab_visualization)
             label_widget.setText(label)
             self.grid_layout_visualization.addWidget(label_widget, 2 + i // 3, (i % 3) * 2)
@@ -173,7 +181,7 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
             lcd_widget = QtWidgets.QLCDNumber(self.tab_visualization)
             lcd_widget.setSmallDecimalPoint(True)
             self.grid_layout_visualization.addWidget(lcd_widget, 2 + i // 3, (i % 3) * 2 + 1)
-            self.lcd_displays[label.lower()] = lcd_widget
+            self.lcd_displays[label] = lcd_widget
 
         self.pushButton_calibrate = QtWidgets.QPushButton(self.tab_visualization)
         self.pushButton_calibrate.setObjectName("pushButton_calibrate")
@@ -187,61 +195,82 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.tab_visualization = QtWidgets.QWidget()
         self.tab_visualization.setObjectName("tab_visualization")
 
-        self.grid_layout_visualization = QtWidgets.QGridLayout(self.tab_visualization)
+        self.main_layout = QtWidgets.QHBoxLayout(self.tab_visualization)
+
+        # Left layout for labels and LCDs
+        self.left_layout = QtWidgets.QVBoxLayout()
+        self.main_layout.addLayout(self.left_layout)
+
+        self.labels_lcds_layout = QtWidgets.QGridLayout()
+        self.left_layout.addLayout(self.labels_lcds_layout)
+
+        self.lcd_displays = {}
+        if MODE_UI == "QUATERNIONS":
+            labels = ["w", "x", "y", "z", "X_POS", "Y_POS", "Z_POS"]
+        else:
+            labels = ["yaw", "pitch", "roll", "X_POS", "Y_POS", "Z_POS"]
+
+        for i, label in enumerate(labels):
+            label_widget = QtWidgets.QLabel(self.tab_visualization)
+            label_widget.setText(label)
+            row = i
+            col = 0
+            self.labels_lcds_layout.addWidget(label_widget, row, col)
+
+            lcd_widget = QtWidgets.QLCDNumber(self.tab_visualization)
+            lcd_widget.setSmallDecimalPoint(True)
+            self.labels_lcds_layout.addWidget(lcd_widget, row, col + 1)
+            self.lcd_displays[label] = lcd_widget
+
+        self.pushButton_calibrate = QtWidgets.QPushButton(self.tab_visualization)
+        self.pushButton_calibrate.setObjectName("pushButton_calibrate")
+        self.left_layout.addWidget(self.pushButton_calibrate)
+
+        # Right layout for chart and control buttons
+        self.right_layout = QtWidgets.QVBoxLayout()
+        self.main_layout.addLayout(self.right_layout)
 
         self.label_graphics_title = QtWidgets.QLabel(self.tab_visualization)
-        self.grid_layout_visualization.addWidget(self.label_graphics_title, 0, 0, 1, 6)
+        self.right_layout.addWidget(self.label_graphics_title)
 
         self.chart_view = QChartView(self.tab_visualization)
         self.chart_view.setRenderHint(QPainter.Antialiasing)
-        self.grid_layout_visualization.addWidget(self.chart_view, 1, 0, 1, 6)
+        self.right_layout.addWidget(self.chart_view)
 
-        self.series_yaw = QLineSeries()
-        self.series_pitch = QLineSeries()
-        self.series_roll = QLineSeries()
-        self.series_heading = QLineSeries()
-
-        self.series_yaw.setName("Yaw")
-        self.series_pitch.setName("Pitch")
-        self.series_roll.setName("Roll")
-        self.series_heading.setName("Heading")
-        self.series_yaw.setPen(QPen(QtCore.Qt.red))
-        self.series_pitch.setPen(QPen(QtCore.Qt.green))
-        self.series_roll.setPen(QPen(QtCore.Qt.blue))
-        self.series_heading.setPen(QPen(QtCore.Qt.gray))
+        self.series_0 = QLineSeries()
+        self.series_1 = QLineSeries()
+        self.series_2 = QLineSeries()
+        self.series_3 = QLineSeries()
+        if MODE_UI == "QUATERNIONS":
+            axis = ["w", "x", "y", "z"]
+        else:
+            axis = ["yaw", "pitch", "roll", "heading"]
+        self.series_0.setName(axis[0])
+        self.series_1.setName(axis[1])
+        self.series_2.setName(axis[2])
+        self.series_3.setName(axis[3])
+        self.series_0.setPen(QPen(QtCore.Qt.red))
+        self.series_1.setPen(QPen(QtCore.Qt.green))
+        self.series_2.setPen(QPen(QtCore.Qt.blue))
+        self.series_3.setPen(QPen(QtCore.Qt.gray))
         self.chart = QChart()
-        self.chart.addSeries(self.series_yaw)
-        self.chart.addSeries(self.series_pitch)
-        self.chart.addSeries(self.series_roll)
-        self.chart.addSeries(self.series_heading)
+        self.chart.addSeries(self.series_0)
+        self.chart.addSeries(self.series_1)
+        self.chart.addSeries(self.series_2)
+        self.chart.addSeries(self.series_3)
 
         self.chart.createDefaultAxes()
         self.chart.legend().setVisible(True)
         self.chart.legend().setAlignment(QtCore.Qt.AlignBottom)
         self.chart_view.setChart(self.chart)
-        self.chart.axisY().setRange(0, 7)
+        if MODE_UI == "QUATERNIONS":
+            MAX_RANGE = 1
+            MIN_RANGE = -1
+        else:
+            MIN_RANGE = 0
+            MAX_RANGE = 7
+        self.chart.axisY().setRange(MIN_RANGE, MAX_RANGE)
         self.chart.axisX().setRange(0, self.max_points)
-        
-        # for x in range(0, self.max_points):
-        #     self.add_point
-
-        self.lcd_displays = {}
-        labels = ["YAW", "PITCH", "ROLL", "X", "Y", "Z"]
-        for i, label in enumerate(labels):
-            label_widget = QtWidgets.QLabel(self.tab_visualization)
-            label_widget.setText(label)
-            row = 2 + (i % 3)
-            col = (i // 3) * 2
-            self.grid_layout_visualization.addWidget(label_widget, row, col)
-            
-            lcd_widget = QtWidgets.QLCDNumber(self.tab_visualization)
-            lcd_widget.setSmallDecimalPoint(True)
-            self.grid_layout_visualization.addWidget(lcd_widget, row, col + 1)
-            self.lcd_displays[label.lower()] = lcd_widget
-
-        self.pushButton_calibrate = QtWidgets.QPushButton(self.tab_visualization)
-        self.pushButton_calibrate.setObjectName("pushButton_calibrate")
-        self.grid_layout_visualization.addWidget(self.pushButton_calibrate, 5, 5)
 
         self.setup_control_buttons()
 
@@ -258,15 +287,15 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         }
         control_buttons_functions = {
             "↑": "move_up",
-            "↓": "move_down"  ,
+            "↓": "move_down",
             "→": "move_right",
             "←": "move_left",
-            "⇧": "move_in"  ,
-            "⇩": "move_out" ,
+            "⇧": "move_in",
+            "⇩": "move_out",
         }
 
         self.grid_layout_controls = QtWidgets.QGridLayout()
-        self.grid_layout_visualization.addLayout(self.grid_layout_controls, 2, 4, 3, 2)
+        self.right_layout.addLayout(self.grid_layout_controls)
 
         for btn_text, pos in control_buttons.items():
             btn = QtWidgets.QPushButton(self.tab_visualization)
@@ -279,20 +308,20 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
             btn.setFont(font)
             btn.setAutoRepeat(True)
             self.grid_layout_controls.addWidget(btn, pos[0], pos[1])
-            #btn.clicked.connect(lambda _, b=btn_text: self.control_button_clicked(b))#
-            btn.clicked.connect(lambda: self.osc_functions[control_buttons_functions[btn_text]](self.devices, self.osc_client))
+            btn.clicked.connect(lambda _, b=btn_text: self.osc_functions[control_buttons_functions[btn_text]](self.devices, self.osc_client))
+
 
     def add_point(self, x, yaw, pitch, roll, heading):
-        if len(self.series_yaw) >= self.max_points:
-            self.series_yaw.remove(0)
-            self.series_pitch.remove(0)
-            self.series_roll.remove(0)
-            self.series_heading.remove(0)
+        if len(self.series_0) >= self.max_points:
+            self.series_0.remove(0)
+            self.series_1.remove(0)
+            self.series_2.remove(0)
+            self.series_3.remove(0)
 
-        self.series_yaw.append(x, yaw)
-        self.series_pitch.append(x, pitch)
-        self.series_roll.append(x, roll)
-        self.series_heading.append(x, heading)
+        self.series_0.append(x, yaw)
+        self.series_1.append(x, pitch)
+        self.series_2.append(x, roll)
+        self.series_3.append(x, heading)
 
         # Desplaza la gráfica al actualizar los puntos
         if x >= self.max_points:
@@ -300,14 +329,16 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot(list)
     def update_data(self, data):
-        self.lcd_displays["yaw"].display(round(data[2], 2))
-        self.lcd_displays["pitch"].display(round(data[0], 2))
-        self.lcd_displays["roll"].display(round(data[1], 2))
-        # self.lcd_displays["yaw"].display(round(data[3], 2))
+        if MODE_UI == "QUATERNIONS":
+            LCDS = ["w", "x", "y", "z"]
+        else:
+            LCDS = ["pitch", "roll", "yaw"]
+        for i, lcd in enumerate(LCDS): 
+            self.lcd_displays[lcd].display(round(data[i], 2))
 
         # Sólo actualizar 1 de cada 100 puntos
         if self.counter % self.CHART_POINTS_VISUALIZATION_INTERVAL == 0:
-            self.add_point(self.counter, data[2], data[0], data[1], data[3])
+            self.add_point(self.counter, data[2], data[0], data[1], 0 if len(data) < 4 else data[3])
 
         self.counter += 1
     def retranslateUi(self, MainScreen):

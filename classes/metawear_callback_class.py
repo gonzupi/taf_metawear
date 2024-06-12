@@ -4,10 +4,14 @@ import signal
 from typing import Callable
 
 import numpy as np
+import quaternion
 
 from log_setup import LOGS_FILE_PATH
 from mbientlab.metawear import POINTER, MetaWear, libmetawear, parse_value
 from mbientlab.metawear.cbindings import *
+from services.quaternion_service import (quaternion_inverse,
+                                         quaternion_to_euler_rads)
+from settings import MODE_UI
 
 #logger = logging.getLogger(__name__)
 
@@ -52,6 +56,7 @@ class MetawearCallback:
         self.YAW_TO_CALIBRATE = 0
         self.PITCH_TO_CALIBRATE = 0
         self.ROLL_TO_CALIBRATE = 0
+        self.QUATERNION_TO_CALIBRATE = None
         
         self._position = [0, 0, 0]
         
@@ -92,10 +97,69 @@ class MetawearCallback:
         #return (abs(value  - calibration_values))%360
         return (value - calibration_values)%360 if (value  - calibration_values) >0 else (value  - calibration_values + 360)%360
 
+    
     def data_handler(self, ctx, data):
-        
-        
         parsed_data = parse_value(data)
+        if str(type(parsed_data)) == "<class 'mbientlab.metawear.cbindings.Quaternion'>":
+            if MODE_UI == "QUATERNIONS":
+                return self.data_handler_quaternions(ctx, parsed_data)
+            elif MODE_UI == "EULER":
+                return self.data_handler_quaternions_euler(ctx, parsed_data)
+            else:
+                logger.error("MODE_UI no encontrado")
+                return
+        elif str(type(parsed_data)) ==  "<class 'mbientlab.metawear.cbindings.EulerAngles'>" :
+            return self.data_handler_radians(ctx, parsed_data)
+        logger.error(f"Problema con los tipos de datos... {type(parsed_data)}")
+
+    
+    def data_handler_quaternions(self, ctx, parsed_data):
+        
+        
+        original_value = np.quaternion(parsed_data.w,
+            parsed_data.x,
+            parsed_data.y,
+            parsed_data.z
+            )
+        value = original_value.normalized()
+        if self._is_pending_calibration:
+            self.QUATERNION_TO_CALIBRATE = quaternion_inverse(value)
+            self._is_pending_calibration = False
+            self._position = [0, 0, 0]
+            
+        if self.QUATERNION_TO_CALIBRATE:
+            value = value * self.QUATERNION_TO_CALIBRATE
+            
+        
+        self.samples+= 1
+        #r, p, y = quaternion.as_euler_angles(value)
+        logger.info(f"Q SENSOR: {original_value}\tFIXED: {value}") #\tEULER: {[p, r, y]}")
+        self.data_callback([value.w,    value.x,    value.y,    value.z,])
+    
+    def data_handler_quaternions_euler(self, ctx, parsed_data):
+        
+        
+        original_value = np.quaternion(parsed_data.w,
+            parsed_data.x,
+            parsed_data.y,
+            parsed_data.z
+            )
+        value = original_value.normalized()
+        if self._is_pending_calibration:
+            self.QUATERNION_TO_CALIBRATE = quaternion_inverse(value)
+            self._is_pending_calibration = False
+            self._position = [0, 0, 0]
+            
+        if self.QUATERNION_TO_CALIBRATE:
+            value = value * self.QUATERNION_TO_CALIBRATE
+            
+        
+        self.samples+= 1
+        r, p, y = quaternion.as_euler_angles(value)
+        logger.info(f"Q SENSOR: {original_value}\tFIXED: {value}") #\tEULER: {[p, r, y]}")
+        self.data_callback([r, p, y])
+        
+    def data_handler_radians(self, ctx, parsed_data):
         yaw_origin = parsed_data.yaw
         pitch_origin = parsed_data.pitch
         roll_origin = parsed_data.roll
@@ -125,5 +189,5 @@ class MetawearCallback:
 
         self.samples+= 1
         
-        self.data_callback([pitch_r, roll_r, yaw_r, heading_r])
+        self.data_callback([pitch_r, roll_r, yaw_r])
         

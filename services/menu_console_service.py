@@ -1,7 +1,8 @@
 import logging
-import keyboard
+
 import services.metawear_service as metawear_service
 from settings import BITA_OSC_PATH_POS, OSC_IS_ENABLED, POS_STEP
+
 logger = logging.getLogger(__name__)
 
 class ExitException(Exception):
@@ -184,7 +185,6 @@ def menu(devices, osc_client):
     keys = [k["key"] for k in available_keys]
     try:
         while True:
-            #pressed_key = keyboard.read_key()
             pressed_key=input("Introduce una letra y presiona intro: ")
             if pressed_key in keys:
                 logger.info(f"Evento de teclado - Presionada la tecla {pressed_key}")
