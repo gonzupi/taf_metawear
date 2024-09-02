@@ -35,8 +35,6 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.data_signal.connect(self.update_data)
         self.CHART_POINTS_VISUALIZATION_INTERVAL = 20 # Represento uno de cada 20 puntos
 
-    
-    
     def setupUi(self, MainScreen):
         MainScreen.setObjectName("MainScreen")
         MainScreen.resize(1024, 840)
@@ -67,88 +65,88 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
     def setup_osc_tab(self):
         self.tab_configuration_osc = QtWidgets.QWidget()
         self.tab_configuration_osc.setObjectName("tab_configuration_osc")
-        
+
         self.grid_layout_osc = QtWidgets.QGridLayout(self.tab_configuration_osc)
-        
+
         self.checkBox_osc_is_enabled = QtWidgets.QCheckBox(self.tab_configuration_osc)
         self.grid_layout_osc.addWidget(self.checkBox_osc_is_enabled, 0, 0, 1, 2)
-        
+
         self.label_ip = QtWidgets.QLabel(self.tab_configuration_osc)
         self.grid_layout_osc.addWidget(self.label_ip, 1, 0)
-        
+
         self.comboBox_aviable_ips = QtWidgets.QComboBox(self.tab_configuration_osc)
         self.comboBox_aviable_ips.setEditable(True)
         self.grid_layout_osc.addWidget(self.comboBox_aviable_ips, 1, 1)
-        
+
         self.label_puerto = QtWidgets.QLabel(self.tab_configuration_osc)
         self.grid_layout_osc.addWidget(self.label_puerto, 2, 0)
-        
+
         self.lineEdit_port = QtWidgets.QLineEdit(self.tab_configuration_osc)
         self.grid_layout_osc.addWidget(self.lineEdit_port, 2, 1)
-        
+
         self.label_osc_pry = QtWidgets.QLabel(self.tab_configuration_osc)
         self.grid_layout_osc.addWidget(self.label_osc_pry, 3, 0)
-        
+
         self.lineEdit_osc_path_pry = QtWidgets.QLineEdit(self.tab_configuration_osc)
         self.grid_layout_osc.addWidget(self.lineEdit_osc_path_pry, 3, 1)
-        
+
         self.label_osc_pos = QtWidgets.QLabel(self.tab_configuration_osc)
         self.grid_layout_osc.addWidget(self.label_osc_pos, 4, 0)
-        
+
         self.lineEdit_osc_path_pos = QtWidgets.QLineEdit(self.tab_configuration_osc)
         self.grid_layout_osc.addWidget(self.lineEdit_osc_path_pos, 4, 1)
-        
+
         self.tabWidget.addTab(self.tab_configuration_osc, "")
 
     def setup_general_configuration_tab(self):
         self.tab_configuration_general = QtWidgets.QWidget()
         self.tab_configuration_general.setObjectName("tab_configuration_general")
-        
+
         self.grid_layout_general = QtWidgets.QGridLayout(self.tab_configuration_general)
-        
+
         self.label_mac = QtWidgets.QLabel(self.tab_configuration_general)
         self.grid_layout_general.addWidget(self.label_mac, 0, 0)
-        
+
         self.lineEdit_device_mac = QtWidgets.QLineEdit(self.tab_configuration_general)
         self.grid_layout_general.addWidget(self.lineEdit_device_mac, 0, 1)
-        
+
         self.label_step_size = QtWidgets.QLabel(self.tab_configuration_general)
         self.grid_layout_general.addWidget(self.label_step_size, 1, 0)
-        
+
         self.spinBox_step_size = QtWidgets.QSpinBox(self.tab_configuration_general)
         self.grid_layout_general.addWidget(self.spinBox_step_size, 1, 1)
-        
+
         self.pushButton_connect = QtWidgets.QPushButton(self.tab_configuration_general)
         self.grid_layout_general.addWidget(self.pushButton_connect, 2, 0)
-        
+
         self.pushButton_disconnect = QtWidgets.QPushButton(self.tab_configuration_general)
         self.pushButton_disconnect.setEnabled(False)
         self.grid_layout_general.addWidget(self.pushButton_disconnect, 2, 1)
-        
+
         self.tabWidget.addTab(self.tab_configuration_general, "")
         logger.info(f"Añadiendo IPs: {self.devices_ip}")
         self.comboBox_aviable_ips.addItems(self.devices_ip)
         if len(self.devices_ip) > 0:
             self.comboBox_aviable_ips.setEditText(self.devices_ip[0])
-        
+
     def setup_visualization_tab(self):
         self.tab_visualization = QtWidgets.QWidget()
         self.tab_visualization.setObjectName("tab_visualization")
-        
+
         self.grid_layout_visualization = QtWidgets.QGridLayout(self.tab_visualization)
-        
+
         self.label_graphics_title = QtWidgets.QLabel(self.tab_visualization)
         self.grid_layout_visualization.addWidget(self.label_graphics_title, 0, 0, 1, 2)
-        
+
         self.chart_view = QChartView(self.tab_visualization)
         self.chart_view.setRenderHint(QPainter.Antialiasing)
         self.grid_layout_visualization.addWidget(self.chart_view, 1, 0, 1, 6)
-        
+
         self.series_0 = QLineSeries()
         self.series_1 = QLineSeries()
         self.series_2 = QLineSeries()
         self.series_3 = QLineSeries()
-        
+
         if MODE_UI == "QUATERNIONS":
             axis = ["w", "x", "y", "z"]
         else:
@@ -157,7 +155,7 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.series_1.setName(axis[1])
         self.series_2.setName(axis[2])
         self.series_3.setName(axis[3])
-        
+
         self.chart = QChart()
         self.chart.addSeries(self.series_0)
         self.chart.addSeries(self.series_1)
@@ -177,7 +175,7 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
             label_widget = QtWidgets.QLabel(self.tab_visualization)
             label_widget.setText(label)
             self.grid_layout_visualization.addWidget(label_widget, 2 + i // 3, (i % 3) * 2)
-            
+
             lcd_widget = QtWidgets.QLCDNumber(self.tab_visualization)
             lcd_widget.setSmallDecimalPoint(True)
             self.grid_layout_visualization.addWidget(lcd_widget, 2 + i // 3, (i % 3) * 2 + 1)
@@ -310,7 +308,6 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
             self.grid_layout_controls.addWidget(btn, pos[0], pos[1])
             btn.clicked.connect(lambda _, b=btn_text: self.osc_functions[control_buttons_functions[btn_text]](self.devices, self.osc_client))
 
-
     def add_point(self, x, yaw, pitch, roll, heading):
         if len(self.series_0) >= self.max_points:
             self.series_0.remove(0)
@@ -330,7 +327,7 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot(list)
     def update_data(self, data):
         if MODE_UI == "QUATERNIONS":
-            LCDS = ["w", "x", "y", "z"]
+            LCDS = ["w", "z", "x", "y"]
         else:
             LCDS = ["pitch", "roll", "yaw"]
         for i, lcd in enumerate(LCDS): 
@@ -338,7 +335,22 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
 
         # Sólo actualizar 1 de cada 100 puntos
         if self.counter % self.CHART_POINTS_VISUALIZATION_INTERVAL == 0:
-            self.add_point(self.counter, data[2], data[0], data[1], 0 if len(data) < 4 else data[3])
+            if MODE_UI == "QUATERNIONS":
+                self.add_point(
+                    self.counter,
+                    data[0],
+                    data[2],
+                    data[3],
+                    data[1],
+                )
+            else:
+                self.add_point(
+                    self.counter,
+                    data[2],
+                    data[0],
+                    data[1],
+                    0 if len(data) < 4 else data[3],
+                )
 
         self.counter += 1
     def retranslateUi(self, MainScreen):
@@ -354,7 +366,7 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.lineEdit_osc_path_pry.setPlaceholderText(_translate("MainScreen", "OSC Path - PRY"))
         self.label_osc_pry.setText(_translate("MainScreen", "Path OSC - PRY"))
         self.label_osc_pos.setText(_translate("MainScreen", "Path POS - XYZ"))
-        
+
         self.lineEdit_osc_path_pos.setText(_translate("MainScreen", BITA_OSC_PATH_POS))
         self.lineEdit_osc_path_pos.setPlaceholderText(_translate("MainScreen", "OSC Path - POS"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_configuration_osc), _translate("MainScreen", "OSC"))
