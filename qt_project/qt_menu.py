@@ -1,4 +1,3 @@
-
 import logging
 import os
 import re
@@ -18,14 +17,41 @@ from settings import (ASK_FOR_IP, BITA_IP, BITA_OSC_DEFAULT_COORDINATES,
 
 logger = logging.getLogger(__name__)
 logger_datos = logging.getLogger("datos")
+import numpy as np
+
+
+def quaternion_to_euler_angle_vectorized1(arr):
+    w = arr[0] 
+    x = arr[1]
+    y = arr[2] 
+    z = arr[3] 
+    ysqr = y * y
+
+    t0 = +2.0 * (w * x + y * z)
+    t1 = +1.0 - 2.0 * (x * x + ysqr)
+    X = (np.arctan2(t0, t1))
+
+    t2 = +2.0 * (w * y - z * x)
+    t2 = np.where(t2 > +1.0, +1.0, t2)
+    # t2 = +1.0 if t2 > +1.0 else t2
+
+    t2 = np.where(t2 < -1.0, -1.0, t2)
+    # t2 = -1.0 if t2 < -1.0 else t2
+    Y =(np.arcsin(t2))
+
+    t3 = +2.0 * (w * z + x * y)
+    t4 = +1.0 - 2.0 * (ysqr + z * z)
+    Z = (np.arctan2(t3, t4))
+
+    return [X, Y, Z]
 
 
 def handle_sigabrt(signum, frame):
         print("SIGABRT signal received")
-        
+
 signal.signal(signal.SIGABRT, handle_sigabrt)
 class ApplicationWindow(QtWidgets.QMainWindow):
-    
+
     def __init__(self, sensorClassType : Type[SensorInterface]):
         super(ApplicationWindow, self).__init__()
         signal.signal(signal.SIGABRT, handle_sigabrt)
@@ -46,7 +72,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             "connect"   : self.connect_sensor,
             "disconnect":self.disconnect_sensor
         }
-        
+
         devices_ip = self.get_ip()
         osc_ip = ""
         self.sensorClassType = sensorClassType
@@ -62,16 +88,37 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         tag = "[data_callback]"
         if self.OSC_IS_ENABLED and  self.osc_client:
             logger_datos.debug(f"{tag}Enviando por osc {data}")
-            
-            self.osc_client.send_message(f"{BITA_OSC_PATH_PRY}", data) # pitch_r, roll_r, yaw_r, heading
+            euler = quaternion_to_euler_angle_vectorized1(data)
+            self.osc_client.send_message(
+                f"{BITA_OSC_PATH_PRY}",
+                euler,
+                # [
+                #     data[3],
+                #     data[1],
+                #     data[2],
+                #     data[0],
+                #     # data[2],
+                #     # data[0],
+                #     # data[1],
+                #     # data[3],
+                #     # data[2],
+                #     # data[3],
+                #     # data[1],
+                #     # data[0],
+                # ],
+            )
+
+            # self.osc_client.send_message(
+            #     f"{BITA_OSC_PATH_PRY}", data
+            # )  # pitch_r, roll_r, yaw_r, heading
 
         # self.ui.lcd_displays["pitch"].display(round(data[0], 2))
         # self.ui.lcd_displays["roll"].display(round(data[1], 2))
-        # self.ui.lcd_displays["yaw"].display(round(data[2], 2)) 
+        # self.ui.lcd_displays["yaw"].display(round(data[2], 2))
         self.ui.data_signal.emit(data)
         # self.ui.add_point(self.ui.counter, data[0], data[1], data[2])
         # self.ui.counter += 1
-    
+
     def closeEvent(self, event):
         self.disconnect_sensor()
     def on_exit(self):
@@ -111,7 +158,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 result.append(ip)
             except Exception as e:
                 logger.warning(f"Problema parseando la IP - {data}")
-            
+
         return result
 
     def disconnect_sensor(self):
@@ -120,12 +167,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 logger.info("Desconectando dispositivo")
                 self.sensor_service.disconnect()
                 self.ui.pushButton_disconnect.setEnabled(False)
-                
+
         except Exception as e:
             logger.exception("Problema desconectandome del sensor")
         finally:
             self.sensor_service = None
-            
+
     def connect_sensor(self, device_mac):
         try:
             if self.sensor_service is not None:
@@ -140,14 +187,13 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         except Exception as e:
             logger.exception("Problema conectando sensor")
             self.sensor_service = None
-        
 
     def calibrate(self, devices):
         logger.info("Calibrando")
         self.sensor_service.device.is_pending_calibration = True
-        #for device in devices:
+        # for device in devices:
         #    device.is_pending_calibration= True
-            
+
     def down_function_qt(self, devices, osc_client):
         if self.OSC_IS_ENABLED:
             devices, osc_client = osc_service.down_function(devices, osc_client)
@@ -182,16 +228,16 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         logger.info("Actualizando LCDs")
         for device in devices:
             position = device.position
-            #lcd_x.display(position[0])
+            # lcd_x.display(position[0])
             if "X_POS" in self.ui.lcd_displays:
                 self.ui.lcd_displays["X_POS"].display(position[0])
-            #lcd_y.display(position[1])
+            # lcd_y.display(position[1])
             if "Y_POS" in self.ui.lcd_displays:
                 self.ui.lcd_displays["Y_POS"].display(position[1])
-            #lcd_z.display(position[2])
+            # lcd_z.display(position[2])
             if "Z_POS" in self.ui.lcd_displays:
                 self.ui.lcd_displays["Z_POS"].display(position[2])
-        
+
 def start_menu(sensorClassType : Type[SensorInterface]):
     global windows
     app = QtWidgets.QApplication(sys.argv)

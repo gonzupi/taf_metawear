@@ -338,10 +338,14 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
             if MODE_UI == "QUATERNIONS":
                 self.add_point(
                     self.counter,
+                    # data[0],w
+                    # data[2],z
+                    # data[3],x
+                    # data[1],y
                     data[0],
-                    data[2],
-                    data[3],
                     data[1],
+                    data[2],
+                    data[3]
                 )
             else:
                 self.add_point(

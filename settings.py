@@ -1,8 +1,10 @@
-
-
 # BITA OSC CONFIG
 BITA_PORT = 12300
-BITA_OSC_PATH_PRY = "/3DTI-OSC/receiver/pry"
+BITA_OSC_PATH_PRY = (
+    #"/3DTI-OSC/v2/listener/orientationQuaternion"
+    "/3DTI-OSC/receiver/pry"  
+    # # "/3DTI-OSC/v2/listener/orientationQuaternion"
+)
 BITA_OSC_PATH_POS = "/3DTI-OSC/receiver/pos"
 BITA_OSC_DEFAULT_COORDINATES = [0, 0, 0]
 BITA_IP = "127.0.0.1" # input("Introduce la IP de BiTA")
@@ -18,7 +20,6 @@ POS_STEP = 1
 ASK_FOR_IP = True
 
 
-
-#"EULER" # "QUATERNIONS"
+# "EULER" # "QUATERNIONS"
 MODE_SENSOR = "QUATERNIONS" 
 MODE_UI = "QUATERNIONS"
