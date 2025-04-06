@@ -1,18 +1,28 @@
+import os
 # BITA OSC CONFIG
-BITA_PORT = 12300
-BITA_OSC_PATH_PRY = (
-    #"/3DTI-OSC/v2/listener/orientationQuaternion"
-    "/3DTI-OSC/receiver/pry"  
-    # # "/3DTI-OSC/v2/listener/orientationQuaternion"
-)
-BITA_OSC_PATH_POS = "/3DTI-OSC/receiver/pos"
-BITA_OSC_DEFAULT_COORDINATES = [0, 0, 0]
-BITA_IP = "127.0.0.1" # input("Introduce la IP de BiTA")
+# BITA_PORT = 12300
+# BITA_OSC_PATH_PRY = "/3DTI-OSC/receiver/pry"
 
+# BITA_OSC_PATH_POS = "/3DTI-OSC/receiver/pos"
+# BITA_OSC_DEFAULT_COORDINATES = [0, 0, 0]
+# BITA_IP = "127.0.0.1" # input("Introduce la IP de BiTA")
+
+try:
+    PUERTO     = int(os.getenv("RECIVER_OSC_PORT", 12300))
+except:
+    print("HA HABIDO UN ERROR LEYENDO EL PUERTO, USANDO VALOR POR DEFECTO")
+    PUERTO = 12300
+
+BITA_OSC_PATH_PRY = os.getenv("RECIVER_OSC_PATH_PRY", "/3DTI-OSC/receiver/pry")
+BITA_OSC_PATH_POS = os.getenv("RECIVER_OSC_PATH_PRY", "/3DTI-OSC/receiver/pos")
+IP         = os.getenv("RECIVER_OSC_IP", "127.0.0.1")
+DEVICE_MAC = os.getenv("SENSOR_IMU_DEVICE_MAC", "00:11:22:33:44:55")
+
+BITA_OSC_DEFAULT_COORDINATES = [0, 0, 0]
 OSC_IS_ENABLED = True
 
 # DEVICE METAWEAR MAC
-DEVICE_MAC = "C9:9A:27:AC:95:8B" # input("Introduce la MAC del IMU")
+# DEVICE_MAC = "C9:9A:27:AC:95:8B" # input("Introduce la MAC del IMU")
 
 
 # CONTROLS
