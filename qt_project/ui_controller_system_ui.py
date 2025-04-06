@@ -7,6 +7,7 @@
 
 
 from PyQt6 import QtCore, QtGui, QtWidgets
+from settings import POS_STEP
 
 
 class Ui_MainScreen(object):
@@ -68,6 +69,8 @@ class Ui_MainScreen(object):
         self.label_step_size = QtWidgets.QLabel(parent=self.tab_configuration_general)
         self.label_step_size.setGeometry(QtCore.QRect(10, 90, 74, 21))
         self.label_step_size.setObjectName("label_step_size")
+        
+
         self.pushButton_connect = QtWidgets.QPushButton(parent=self.tab_configuration_general)
         self.pushButton_connect.setGeometry(QtCore.QRect(250, 40, 90, 29))
         self.pushButton_connect.setObjectName("pushButton_connect")

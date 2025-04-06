@@ -1,7 +1,7 @@
 import logging
 import os
 import signal
-from typing import Callable
+from typing import Callable, List
 
 import numpy as np
 import quaternion
@@ -53,19 +53,20 @@ class MetawearCallback:
         self._precision = precision
         self._data_callback = data_callback
 
-        self.YAW_TO_CALIBRATE = 0
+        self.YAW_TO_CALIBRATE   = 0
         self.PITCH_TO_CALIBRATE = 0
-        self.ROLL_TO_CALIBRATE = 0
+        self.ROLL_TO_CALIBRATE  = 0
         self.QUATERNION_TO_CALIBRATE = None
         
         self._position = [0, 0, 0]
         
     @property
-    def position(self):
+    def position(self)-> List[float]:
         return self._position
 
     @position.setter
-    def position(self, position):
+    def position(self, position:List[float]):
+        logger.info(f"Actualizando posición virtual a {position}")
         self._position = position
         
     @property
@@ -160,9 +161,9 @@ class MetawearCallback:
         self.data_callback([r, p, y])
         
     def data_handler_radians(self, ctx, parsed_data):
-        yaw_origin = parsed_data.yaw
-        pitch_origin = parsed_data.pitch
-        roll_origin = parsed_data.roll
+        yaw_origin     = parsed_data.yaw
+        pitch_origin   = parsed_data.pitch
+        roll_origin    = parsed_data.roll
         heading_origin = parsed_data.heading
         logger.debug(f"ORIG;yaw;{round(yaw_origin, self._precision)};pitch;{round(pitch_origin, self._precision)};roll;{round(roll_origin, self._precision)};heading;{round(heading_origin,self._precision)};")
         if self._is_pending_calibration:
@@ -175,15 +176,15 @@ class MetawearCallback:
              
         
 
-        yaw = MetawearCallback.calibrateDegree(yaw_origin, self.YAW_TO_CALIBRATE)
+        yaw   = MetawearCallback.calibrateDegree(yaw_origin, self.YAW_TO_CALIBRATE)
         pitch = MetawearCallback.calibrateDegree(pitch_origin, self.PITCH_TO_CALIBRATE)
-        roll = MetawearCallback.calibrateDegree(roll_origin, self.ROLL_TO_CALIBRATE)
+        roll  = MetawearCallback.calibrateDegree(roll_origin, self.ROLL_TO_CALIBRATE)
         
         logger.debug(f"EUL_FIXED;yaw;{round(yaw, self._precision)};pitch;{round(pitch, self._precision)};roll;{round(roll, self._precision)};heading;{round(heading_origin,self.precision)};")
         
-        yaw_r = np.deg2rad(yaw)
-        pitch_r = np.deg2rad(pitch)
-        roll_r = np.deg2rad(roll)
+        yaw_r     = np.deg2rad(yaw)
+        pitch_r   = np.deg2rad(pitch)
+        roll_r    = np.deg2rad(roll)
         heading_r = np.deg2rad(heading_origin)
         logger.info(f"RAD;yaw;{round(yaw_r, self._precision)};pitch;{round(pitch_r, self._precision)};roll;{round(roll_r, self._precision)}];heading;{round(heading_r,self.precision)};")
 

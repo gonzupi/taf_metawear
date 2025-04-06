@@ -288,25 +288,33 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
             "↓": "move_down",
             "→": "move_right",
             "←": "move_left",
-            "⇧": "move_in",
             "⇩": "move_out",
+            "⇧": "move_in",
         }
 
         self.grid_layout_controls = QtWidgets.QGridLayout()
         self.right_layout.addLayout(self.grid_layout_controls)
-
+        btns = {}
         for btn_text, pos in control_buttons.items():
-            btn = QtWidgets.QPushButton(self.tab_visualization)
-            btn.setText(btn_text)
+            btns[btn_text] = QtWidgets.QPushButton(self.tab_visualization)
+
+            btns[btn_text].setText(btn_text)
             font = QtGui.QFont()
             font.setFamily("DejaVu Sans")
             font.setPointSize(25)
             font.setBold(True)
             font.setWeight(75)
-            btn.setFont(font)
-            btn.setAutoRepeat(True)
-            self.grid_layout_controls.addWidget(btn, pos[0], pos[1])
-            btn.clicked.connect(lambda _, b=btn_text: self.osc_functions[control_buttons_functions[btn_text]](self.devices, self.osc_client))
+            btns[btn_text].setFont(font)
+            btns[btn_text].setAutoRepeat(True)
+            self.grid_layout_controls.addWidget(btns[btn_text], pos[0], pos[1])
+            logger.info(
+                f"Seteando callback - {btn_text} -> {control_buttons_functions[btn_text]}"
+            )
+            btns[btn_text].clicked.connect(
+                lambda _, b=btn_text: self.osc_functions[
+                    control_buttons_functions[btn_text]
+                ](self.devices, self.osc_client)
+            )
 
     def add_point(self, x, yaw, pitch, roll, heading):
         if len(self.series_0) >= self.max_points:
@@ -376,6 +384,7 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_configuration_osc), _translate("MainScreen", "OSC"))
         self.label_mac.setText(_translate("MainScreen", "Device - MAC"))
         self.label_step_size.setText(_translate("MainScreen", "Step size"))
+        self.spinBox_step_size.setValue(POS_STEP)
         self.pushButton_connect.setText(_translate("MainScreen", "Conectar"))
         self.pushButton_disconnect.setText(_translate("MainScreen", "Desconectar"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_configuration_general), _translate("MainScreen", "Configuración general"))
@@ -388,6 +397,11 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         self.pushButton_connect.clicked.connect(lambda: self.devices_function["connect"](self.lineEdit_device_mac.text()))
         self.pushButton_disconnect.clicked.connect(lambda: self.devices_function["disconnect"]())
         self.pushButton_calibrate.clicked.connect(lambda: self.devices_function["calibrate"](self.devices))
+        self.spinBox_step_size.valueChanged.connect(set_pos_step)
+
+def set_pos_step(value):
+    global POS_STEP
+    POS_STEP = value
 
 if __name__ == "__main__":
     import sys

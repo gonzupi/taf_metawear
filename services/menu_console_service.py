@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 class ExitException(Exception):
     pass
+
 def exit_function(devices, osc_client, available_keys):
     raise ExitException()
 
@@ -199,3 +200,4 @@ def menu(devices, osc_client):
         logger.warning("Saliendo del control por teclado. Cerrando stream de comunicación con los sensores, espere unos segundos por favor...")
     except Exception as e:
         logger.exception("Ha ocurrido un problema")
+        

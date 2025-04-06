@@ -13,7 +13,7 @@ from qt_project.ui_controller_system import Ui_MainScreen
 from services.SensorInterface import SensorInterface
 from settings import (ASK_FOR_IP, BITA_IP, BITA_OSC_DEFAULT_COORDINATES,
                       BITA_OSC_PATH_POS, BITA_OSC_PATH_PRY, BITA_PORT,
-                      DEVICE_MAC, OSC_IS_ENABLED)
+                      DEVICE_MAC, OSC_IS_ENABLED, POS_STEP)
 
 logger = logging.getLogger(__name__)
 logger_datos = logging.getLogger("datos")
@@ -57,15 +57,15 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         signal.signal(signal.SIGABRT, handle_sigabrt)
 
         osc_functions = {
-            "move_down" : self.down_function_qt,
-            "move_up"   : self.up_function_qt,
-            "move_left" : self.left_function_qt,
+            "move_down": self.down_function_qt,
+            "move_up": self.up_function_qt,
+            "move_left": self.left_function_qt,
             "move_right": self.right_function_qt,
-            "move_in"   : self.in_function_qt,
-            "move_out"  : self.out_function_qt,
-            "connect"   : self.start_osc,
-            "set_enable_osc" : self.set_enable_osc,
-            "data_callback" : self.data_callback
+            "move_out": self.out_function_qt,
+            "move_in": self.in_function_qt,
+            "connect": self.start_osc,
+            "set_enable_osc": self.set_enable_osc,
+            "data_callback": self.data_callback,
         }
         devices_function = {
             "calibrate" : self.calibrate,
@@ -76,7 +76,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         devices_ip = self.get_ip()
         osc_ip = ""
         self.sensorClassType = sensorClassType
-        self.ui = Ui_MainScreen(None, [], osc_functions, devices_function,  devices_ip, osc_ip)
+        self.devices = []
+        self.ui = Ui_MainScreen(
+            None, self.devices, osc_functions, devices_function, devices_ip, osc_ip
+        )
         self.ui.setupUi(self)
         self.osc_client = None
         self.devices_ip=devices_ip
@@ -90,7 +93,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             logger_datos.debug(f"{tag}Enviando por osc {data}")
             euler = quaternion_to_euler_angle_vectorized1(data)
             self.osc_client.send_message(
-                f"{BITA_OSC_PATH_PRY}",
+                f"{self.ui.lineEdit_osc_path_pry.text()}",
                 euler,
                 # [
                 #     data[3],
@@ -126,7 +129,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.disconnect_sensor()
 
     def start_osc(self, osc_ip, osc_port = BITA_PORT, osc_pos = BITA_OSC_PATH_POS, osc_coordinates = BITA_OSC_DEFAULT_COORDINATES):
-        logger.info(f"Habilitando OSC: IP : {osc_ip} \nPORT:{osc_port}\nPOS_PATH:{BITA_OSC_PATH_POS}\nDEFAULT_COORDINATES:{BITA_OSC_DEFAULT_COORDINATES}")
+        logger.info(
+            f"Habilitando OSC: IP : {osc_ip} \nPORT:{osc_port}\nPOS_PATH:{osc_pos}\nDEFAULT_COORDINATES:{osc_coordinates}"
+        )
         osc_client = osc_service.connect(osc_ip, osc_port)
         if not osc_service.init(osc_client, osc_pos, osc_coordinates):
             logger.warning("Problema iniciando el OSC")
@@ -181,9 +186,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.pushButton_disconnect.setEnabled(False)
             logger.info("Conectando dispositivo")
             self.sensor_service = self.sensorClassType(device_mac, self.data_callback)
-            devices = self.sensor_service.connect()
+            self.devices = self.sensor_service.connect()
+            self.ui.devices = self.devices
             self.ui.pushButton_disconnect.setEnabled(True)
             self.ui.tabWidget.setCurrentIndex(2)
+            # self.ui.sensors.push(self.sensor_service)
         except Exception as e:
             logger.exception("Problema conectando sensor")
             self.sensor_service = None
@@ -196,38 +203,98 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def down_function_qt(self, devices, osc_client):
         if self.OSC_IS_ENABLED:
-            devices, osc_client = osc_service.down_function(devices, osc_client)
+            logger.info("Moviendo hacia ABAJO")
+            devices, osc_client = osc_service.down_function(self.devices, osc_client)
+        else:
+            for device in devices:
+                position = device.position
+                pos_x = position[0]
+                pos_y = position[1]
+                pos_z = position[2]
+
+                pos_y = pos_y - POS_STEP
         self.update_devices_display_position(devices)
 
     def up_function_qt(self, devices, osc_client):
+        logger.info("Moviendo hacia ARRIBA")
         if self.OSC_IS_ENABLED:
-            devices, osc_client = osc_service.up_function(devices, osc_client)
+            devices, osc_client = osc_service.up_function(self.devices, osc_client)
+        else:
+            for device in devices:
+                position = device.position
+                pos_x = position[0]
+                pos_y = position[1]
+                pos_z = position[2]
+
+                pos_y = pos_y + POS_STEP
         self.update_devices_display_position(devices)
 
     def left_function_qt(self, devices, osc_client):
+        logger.info("Moviendo hacia IZQUIERDA")
+
         if self.OSC_IS_ENABLED:
-            devices, osc_client = osc_service.left_function(devices, osc_client)
+            devices, osc_client = osc_service.left_function(self.devices, osc_client)
+        else:
+            for device in devices:
+                position = device.position
+                pos_x = position[0]
+                pos_y = position[1]
+                pos_z = position[2]
+
+                pos_x = pos_x - POS_STEP
         self.update_devices_display_position(devices)
 
     def right_function_qt(self, devices, osc_client):
+        logger.info("Moviendo hacia DERECHA")
         if self.OSC_IS_ENABLED:
-            devices, osc_client = osc_service.right_function(devices, osc_client)
+            devices, osc_client = osc_service.right_function(self.devices, osc_client)
+        else:
+            for device in devices:
+                position = device.position
+                pos_x = position[0]
+                pos_y = position[1]
+                pos_z = position[2]
+
+                pos_x = pos_x + POS_STEP
         self.update_devices_display_position(devices)
 
     def in_function_qt(self, devices, osc_client):
+        logger.info("Moviendo hacia DENTRO")
         if self.OSC_IS_ENABLED:
-            devices, osc_client = osc_service.in_function(devices, osc_client)
+            devices, osc_client = osc_service.in_function(self.devices, osc_client)
+        else:
+            for device in devices:
+                position = device.position
+                pos_x = position[0]
+                pos_y = position[1]
+                pos_z = position[2]
+
+                pos_z = pos_z + POS_STEP
+
         self.update_devices_display_position(devices)
 
     def out_function_qt(self, devices, osc_client):
+        logger.info("Moviendo hacia FUERA")
         if self.OSC_IS_ENABLED:
-            devices, osc_client = osc_service.out_function(devices, osc_client)
+            devices, osc_client = osc_service.out_function(self.devices, osc_client)
+        else:
+            for device in devices:
+                position = device.position
+                pos_x = position[0]
+                pos_y = position[1]
+                pos_z = position[2]
+
+                pos_z = pos_z - POS_STEP
+
+                device.position=[pos_x, pos_y, pos_z]
         self.update_devices_display_position(devices)
 
     def update_devices_display_position(self, devices):
         logger.info("Actualizando LCDs")
-        for device in devices:
+
+        for device in self.devices:
             position = device.position
+            logger.info(f"Posiciones del device : {position}")
             # lcd_x.display(position[0])
             if "X_POS" in self.ui.lcd_displays:
                 self.ui.lcd_displays["X_POS"].display(position[0])
@@ -237,6 +304,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             # lcd_z.display(position[2])
             if "Z_POS" in self.ui.lcd_displays:
                 self.ui.lcd_displays["Z_POS"].display(position[2])
+
 
 def start_menu(sensorClassType : Type[SensorInterface]):
     global windows
