@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtWidgets
 import services.osc_service as osc_service
 from qt_project.ui_controller_system import Ui_MainScreen
 from services.SensorInterface import SensorInterface
-from settings import (ASK_FOR_IP, BITA_IP, OSC_DEFAULT_COORDINATES,
+from settings import (ASK_FOR_IP, OSC_RECIVER_IP, OSC_DEFAULT_COORDINATES,
                       OSC_RECIVER_PATH_POS, OSC_RECIVER_PATH_PRY, OSC_RECIVER_PORT,
                       IMU_DEVICE_MAC, OSC_IS_ENABLED, POS_STEP)
 
@@ -213,6 +213,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 pos_z = position[2]
 
                 pos_y = pos_y - POS_STEP
+                device.position = [pos_x, pos_y, pos_z]
         self.update_devices_display_position(devices)
 
     def up_function_qt(self, devices, osc_client):
@@ -227,6 +228,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 pos_z = position[2]
 
                 pos_y = pos_y + POS_STEP
+                device.position = [pos_x, pos_y, pos_z]
         self.update_devices_display_position(devices)
 
     def left_function_qt(self, devices, osc_client):
@@ -242,6 +244,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 pos_z = position[2]
 
                 pos_x = pos_x - POS_STEP
+                device.position = [pos_x, pos_y, pos_z]
         self.update_devices_display_position(devices)
 
     def right_function_qt(self, devices, osc_client):
@@ -256,6 +259,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 pos_z = position[2]
 
                 pos_x = pos_x + POS_STEP
+                device.position = [pos_x, pos_y, pos_z]
         self.update_devices_display_position(devices)
 
     def in_function_qt(self, devices, osc_client):
@@ -270,7 +274,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 pos_z = position[2]
 
                 pos_z = pos_z + POS_STEP
-
+                device.position = [pos_x, pos_y, pos_z]
         self.update_devices_display_position(devices)
 
     def out_function_qt(self, devices, osc_client):

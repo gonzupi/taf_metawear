@@ -280,8 +280,8 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
             "↓": (1, 1),
             "→": (1, 2),
             "←": (1, 0),
+            "⇩": (1, 3),
             "⇧": (0, 3),
-            "⇩": (1, 3)
         }
         control_buttons_functions = {
             "↑": "move_up",
@@ -310,11 +310,15 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
             logger.info(
                 f"Seteando callback - {btn_text} -> {control_buttons_functions[btn_text]}"
             )
+            func = self.osc_functions[control_buttons_functions[btn_text]]
             btns[btn_text].clicked.connect(
-                lambda _, b=btn_text: self.osc_functions[
-                    control_buttons_functions[btn_text]
-                ](self.devices, self.osc_client)
+                lambda _, f=func: f(self.devices, self.osc_client)
             )
+            # btns[btn_text].clicked.connect(
+            #     lambda _, b=btn_text: self.osc_functions[
+            #         control_buttons_functions[btn_text]
+            #     ](self.devices, self.osc_client)
+            # )
 
     def add_point(self, x, yaw, pitch, roll, heading):
         if len(self.series_0) >= self.max_points:
