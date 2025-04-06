@@ -1,7 +1,7 @@
 import logging
 
 import services.metawear_service as metawear_service
-from settings import BITA_OSC_PATH_POS, OSC_IS_ENABLED, POS_STEP
+from settings import OSC_RECIVER_PATH_POS, OSC_IS_ENABLED, POS_STEP
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ def up_function(devices, osc_client, available_keys):
         pos_x = pos_y + POS_STEP
 
         if OSC_IS_ENABLED:
-            osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
+            osc_client.send_message(OSC_RECIVER_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
     return devices, osc_client, available_keys
@@ -50,7 +50,7 @@ def down_function(devices, osc_client, available_keys):
 
         pos_x = pos_y - POS_STEP
         if OSC_IS_ENABLED:
-            osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
+            osc_client.send_message(OSC_RECIVER_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
     return devices, osc_client, available_keys
@@ -65,7 +65,7 @@ def right_function(devices, osc_client, available_keys):
 
         pos_x = pos_x + POS_STEP
         if OSC_IS_ENABLED:
-            osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
+            osc_client.send_message(OSC_RECIVER_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
     return devices, osc_client, available_keys
@@ -80,7 +80,7 @@ def left_function(devices, osc_client, available_keys):
 
         pos_x = pos_x - POS_STEP
         if OSC_IS_ENABLED:
-            osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
+            osc_client.send_message(OSC_RECIVER_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
     return devices, osc_client, available_keys
@@ -95,7 +95,7 @@ def in_function(devices, osc_client, available_keys):
 
         pos_x = pos_z + POS_STEP
         if OSC_IS_ENABLED:
-            osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
+            osc_client.send_message(OSC_RECIVER_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
     return devices, osc_client, available_keys
@@ -110,7 +110,7 @@ def out_function(devices, osc_client, available_keys):
 
         pos_x = pos_z - POS_STEP
         if OSC_IS_ENABLED:
-            osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
+            osc_client.send_message(OSC_RECIVER_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
     return devices, osc_client, available_keys

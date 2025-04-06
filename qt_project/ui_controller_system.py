@@ -14,8 +14,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtChart import QChart, QChartView, QLineSeries
 from PyQt5.QtGui import QPainter, QPen
 
-from settings import (BITA_OSC_PATH_POS, BITA_OSC_PATH_PRY, BITA_PORT,
-                      DEVICE_MAC, MODE_SENSOR, MODE_UI, POS_STEP)
+from settings import (OSC_RECIVER_PATH_POS, OSC_RECIVER_PATH_PRY, OSC_RECIVER_PORT,
+                      IMU_DEVICE_MAC, MODE_SENSOR, MODE_UI, POS_STEP)
 
 logger = logging.getLogger(__name__)
 
@@ -369,17 +369,17 @@ class Ui_MainScreen(QtWidgets.QMainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainScreen.setWindowTitle(_translate("MainScreen", "Control sensor inercial"))
         self.checkBox_osc_is_enabled.setText(_translate("MainScreen", "Habilitar envío por OSC"))
-        self.lineEdit_port.setText(_translate("MainScreen", str(BITA_PORT)))
+        self.lineEdit_port.setText(_translate("MainScreen", str(OSC_RECIVER_PORT)))
         self.label_ip.setText(_translate("MainScreen", "IP:"))
-        self.lineEdit_device_mac.setText(_translate("MainScreen", DEVICE_MAC))
+        self.lineEdit_device_mac.setText(_translate("MainScreen", IMU_DEVICE_MAC))
         self.label_puerto.setText(_translate("MainScreen", "Puerto"))
         self.comboBox_aviable_ips.setPlaceholderText(_translate("MainScreen", "Cargando lista de IPs"))
-        self.lineEdit_osc_path_pry.setText(_translate("MainScreen", BITA_OSC_PATH_PRY))
+        self.lineEdit_osc_path_pry.setText(_translate("MainScreen", OSC_RECIVER_PATH_PRY))
         self.lineEdit_osc_path_pry.setPlaceholderText(_translate("MainScreen", "OSC Path - PRY"))
         self.label_osc_pry.setText(_translate("MainScreen", "Path OSC - PRY"))
         self.label_osc_pos.setText(_translate("MainScreen", "Path POS - XYZ"))
 
-        self.lineEdit_osc_path_pos.setText(_translate("MainScreen", BITA_OSC_PATH_POS))
+        self.lineEdit_osc_path_pos.setText(_translate("MainScreen", OSC_RECIVER_PATH_POS))
         self.lineEdit_osc_path_pos.setPlaceholderText(_translate("MainScreen", "OSC Path - POS"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_configuration_osc), _translate("MainScreen", "OSC"))
         self.label_mac.setText(_translate("MainScreen", "Device - MAC"))

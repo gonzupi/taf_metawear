@@ -9,7 +9,7 @@ from log_setup import log_setup
 from mbientlab.metawear.cbindings import *
 from qt_project.qt_menu import start_menu
 from services.metawear_service import MetaWearService
-from settings import BITA_OSC_PATH_PRY
+from settings import OSC_RECIVER_PATH_PRY
 
 logger = logging.getLogger(__name__)
 if sys.version_info[0] == 2:

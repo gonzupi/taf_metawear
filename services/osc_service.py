@@ -2,7 +2,7 @@ import logging
 
 from pythonosc import udp_client
 
-from settings import BITA_OSC_PATH_POS, POS_STEP
+from settings import OSC_RECIVER_PATH_POS, POS_STEP
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ def up_function(devices, osc_client):
         pos_y = pos_y + POS_STEP
 
         if osc_client:
-            osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
+            osc_client.send_message(OSC_RECIVER_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
     return devices, osc_client
@@ -52,7 +52,7 @@ def down_function(devices, osc_client):
 
         pos_y = pos_y - POS_STEP
         if osc_client:
-            osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
+            osc_client.send_message(OSC_RECIVER_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
     return devices, osc_client
@@ -67,7 +67,7 @@ def right_function(devices, osc_client):
 
         pos_x = pos_x + POS_STEP
         if osc_client:
-            osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
+            osc_client.send_message(OSC_RECIVER_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
     return devices, osc_client
@@ -82,7 +82,7 @@ def left_function(devices, osc_client):
 
         pos_x = pos_x - POS_STEP
         if osc_client:
-            osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
+            osc_client.send_message(OSC_RECIVER_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
     return devices, osc_client
@@ -97,7 +97,7 @@ def in_function(devices, osc_client):
 
         pos_z = pos_z + POS_STEP
         if osc_client:
-            osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
+            osc_client.send_message(OSC_RECIVER_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
     return devices, osc_client
@@ -112,7 +112,7 @@ def out_function(devices, osc_client):
 
         pos_z = pos_z - POS_STEP
         if osc_client:
-            osc_client.send_message(BITA_OSC_PATH_POS, [pos_x, pos_y, pos_z])
+            osc_client.send_message(OSC_RECIVER_PATH_POS, [pos_x, pos_y, pos_z])
         device.position=[pos_x, pos_y, pos_z]
         logger.info(f"Moving - From {position} -> { [pos_x, pos_y, pos_z]}")
     return devices, osc_client

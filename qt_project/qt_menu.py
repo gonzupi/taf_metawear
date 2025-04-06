@@ -11,9 +11,9 @@ from PyQt5 import QtCore, QtWidgets
 import services.osc_service as osc_service
 from qt_project.ui_controller_system import Ui_MainScreen
 from services.SensorInterface import SensorInterface
-from settings import (ASK_FOR_IP, BITA_IP, BITA_OSC_DEFAULT_COORDINATES,
-                      BITA_OSC_PATH_POS, BITA_OSC_PATH_PRY, BITA_PORT,
-                      DEVICE_MAC, OSC_IS_ENABLED, POS_STEP)
+from settings import (ASK_FOR_IP, BITA_IP, OSC_DEFAULT_COORDINATES,
+                      OSC_RECIVER_PATH_POS, OSC_RECIVER_PATH_PRY, OSC_RECIVER_PORT,
+                      IMU_DEVICE_MAC, OSC_IS_ENABLED, POS_STEP)
 
 logger = logging.getLogger(__name__)
 logger_datos = logging.getLogger("datos")
@@ -128,7 +128,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         logger.info("Saliendo del programa...")
         self.disconnect_sensor()
 
-    def start_osc(self, osc_ip, osc_port = BITA_PORT, osc_pos = BITA_OSC_PATH_POS, osc_coordinates = BITA_OSC_DEFAULT_COORDINATES):
+    def start_osc(self, osc_ip, osc_port = OSC_RECIVER_PORT, osc_pos = OSC_RECIVER_PATH_POS, osc_coordinates = OSC_DEFAULT_COORDINATES):
         logger.info(
             f"Habilitando OSC: IP : {osc_ip} \nPORT:{osc_port}\nPOS_PATH:{osc_pos}\nDEFAULT_COORDINATES:{osc_coordinates}"
         )
